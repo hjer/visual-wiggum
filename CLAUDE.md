@@ -37,10 +37,11 @@ Build system: **Hatchling** (pyproject.toml). Entry point: `spec-view = spec_vie
 
 Releases are done via **GitHub release flow** — not manual PyPI uploads. To release:
 1. Bump version in `pyproject.toml`
-2. Commit and push to `main`
-3. Create a GitHub release (tag + release notes) — this triggers the CI pipeline to publish to PyPI
+2. Run `.venv/bin/python -m build` to verify the build succeeds before pushing
+3. Commit and push to `main`
+4. Create a GitHub release (tag + release notes) — this triggers the CI pipeline to publish to PyPI
 
-Never run `twine upload` or `python -m build` manually for releases.
+Never run `twine upload` manually for releases.
 
 ## Architecture
 
