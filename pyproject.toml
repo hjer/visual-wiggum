@@ -10,6 +10,20 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "spec-view contributors" }]
+keywords = ["spec", "dashboard", "tui", "spec-kit", "kiro", "markdown", "tasks"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Software Development :: Build Tools",
+]
+
+[project.urls]
+Homepage = "https://github.com/hjer/visual-wiggum"
+Repository = "https://github.com/hjer/visual-wiggum"
+Issues = "https://github.com/hjer/visual-wiggum/issues"
 dependencies = [
     "click>=8.0",
     "python-frontmatter>=1.0",
