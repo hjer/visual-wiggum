@@ -2,7 +2,7 @@
 
 A dashboard for spec-driven development. Terminal and web UI for tracking specs, tasks, and progress across your project.
 
-Works with **spec-kit**, **Kiro**, **OpenSpec**, and plain markdown — auto-detected, zero config.
+Works with **spec-kit**, **Kiro**, **OpenSpec**, **Ralph Wiggum**, and plain markdown — auto-detected, zero config.
 
 ```bash
 pip install spec-view
@@ -71,7 +71,22 @@ spec-view auto-detects which tool produced your files:
 | **spec-kit** | `## Phase N:` + `T001` task IDs | Phases, task IDs, parallel markers, story refs, checkpoints |
 | **Kiro** | `.kiro/` in file path | Indentation-based subtask trees |
 | **OpenSpec** | `## 1.` numbered sections | Section structure |
+| **Ralph Wiggum** | `IMPLEMENTATION_PLAN.md` via `include` | Checkbox tasks, gap analysis sections |
 | **Generic** | Fallback | Checkbox tasks with subtask hierarchy |
+
+### Ralph Wiggum Loop Support
+
+spec-view is built to work with the [Ralph Wiggum loop](https://github.com/hjers/ralph-wiggum) — an iterative, autonomous spec-driven development workflow. The loop writes specs as requirements, tracks tasks in an `IMPLEMENTATION_PLAN.md`, and iterates with fresh context windows.
+
+spec-view tracks the implementation plan alongside your specs, so loop progress is visible in the dashboard. Configure it with:
+
+```yaml
+# .spec-view/config.yaml
+include:
+  - "IMPLEMENTATION_PLAN.md"
+```
+
+The live watcher picks up changes to included files too, so every loop iteration updates the dashboard in real time.
 
 ### spec-kit Support
 
