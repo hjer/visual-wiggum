@@ -1,48 +1,51 @@
 # spec-view
 
-Universal spec-driven development dashboard. Works with **spec-kit**, **Kiro**, **OpenSpec**, or plain markdown specs.
+A dashboard for spec-driven development. Terminal and web UI for tracking specs, tasks, and progress across your project.
 
-Install with `pip install spec-view`, run `spec-view` in your project, done.
+Works with **spec-kit**, **Kiro**, **OpenSpec**, and plain markdown — auto-detected, zero config.
+
+```bash
+pip install spec-view
+spec-view
+```
+
+That's it. Point it at a project with markdown specs and you get a live dashboard.
+
+## Why
+
+AI coding tools are converging on spec-driven workflows — requirements, design, and tasks as markdown files. But none of them ship a good way to *see* what's happening across all your specs at once.
+
+spec-kit has no monitoring. Kiro locks you into their IDE. OpenSpec is just files.
+
+spec-view reads all of them and gives you a single view of progress.
 
 ## Quick Start
 
 ```bash
-# Initialize specs directory with examples
-spec-view init
-
-# List all specs
-spec-view list
-
-# Launch TUI dashboard
-spec-view
-
-# Start web dashboard
-spec-view serve
-
-# Watch for changes
-spec-view watch
-
-# Validate spec format
-spec-view validate
+spec-view init       # Scaffold a specs/ directory with examples
+spec-view            # Launch TUI dashboard
+spec-view serve      # Start web dashboard at localhost:8080
+spec-view watch      # TUI with live file watching
+spec-view list       # Simple text table of specs + status
+spec-view validate   # Check specs for format issues
 ```
 
-## Spec Format
+## What It Reads
 
-Put your specs in a `specs/` directory:
+Put specs in `specs/` (or configure any path):
 
 ```
 specs/
-├── overview.md
 ├── auth-system/
-│   ├── spec.md
-│   ├── design.md
-│   └── tasks.md
+│   ├── spec.md       # Requirements + acceptance criteria
+│   ├── design.md     # Technical design
+│   └── tasks.md      # Implementation tasks
 └── payment-flow/
     ├── spec.md
     └── tasks.md
 ```
 
-Each markdown file supports optional YAML frontmatter:
+Each file supports optional YAML frontmatter:
 
 ```markdown
 ---
@@ -57,20 +60,24 @@ tags: [auth, backend]
 - [x] JWT token generation
 ```
 
+No frontmatter? That's fine — spec-view infers title from the first heading and treats everything as draft.
+
 ## Format-Aware Parsing
 
-spec-view auto-detects which tool produced your spec files and extracts tool-specific metadata:
+spec-view auto-detects which tool produced your files:
 
-| Format | Detection | Extracted metadata |
-|--------|-----------|-------------------|
-| **spec-kit** | `## Phase N:` headings + `T001` task IDs | Phases, task IDs, `[P]` parallel markers, `[US1]` story refs, checkpoints |
+| Format | How it's detected | What's extracted |
+|--------|-------------------|-----------------|
+| **spec-kit** | `## Phase N:` + `T001` task IDs | Phases, task IDs, parallel markers, story refs, checkpoints |
 | **Kiro** | `.kiro/` in file path | Indentation-based subtask trees |
-| **OpenSpec** | `## 1.` numbered section headers | Section structure |
-| **Generic** | Fallback | Checkbox tasks with subtask trees |
+| **OpenSpec** | `## 1.` numbered sections | Section structure |
+| **Generic** | Fallback | Checkbox tasks with subtask hierarchy |
 
-### spec-kit Example
+### spec-kit Support
 
-spec-view is the missing monitoring piece for spec-kit. A spec-kit `tasks.md` with phases, task IDs, parallel markers, and story refs:
+spec-kit generates structured task files but has zero monitoring — no watch, no status dashboard, no progress view. spec-view fills that gap.
+
+A spec-kit `tasks.md`:
 
 ```markdown
 ## Phase 1: Setup
@@ -86,7 +93,7 @@ spec-view is the missing monitoring piece for spec-kit. A spec-kit `tasks.md` wi
 - [ ] T006 [P] [US1] Create login form
 ```
 
-In the TUI, this renders as:
+In the TUI:
 
 ```
 Phase 1: Setup ✓ (3/3)
@@ -101,11 +108,15 @@ Phase 2: US1 - Login Flow (1/3)
   ○ T006 ⇄ [US1] Create login form
 ```
 
-The web UI shows collapsible phase sections with progress bars, task ID badges, parallel icons, and colored story tags.
+The web UI shows the same structure with collapsible phases, progress bars, and colored story tags.
+
+## Live Updates
+
+Both dashboards watch for file changes. Check off a task in your editor — the dashboard updates within a second.
 
 ## Configuration
 
-Create `.spec-view/config.yaml` to customize:
+Optional `.spec-view/config.yaml`:
 
 ```yaml
 spec_paths:
@@ -119,6 +130,6 @@ serve:
   port: 8080
 ```
 
-## Live Updates
+## License
 
-Both TUI and web dashboards watch for file changes and update automatically. Edit a `[ ]` to `[x]` in your editor and see progress update within ~1 second.
+MIT
