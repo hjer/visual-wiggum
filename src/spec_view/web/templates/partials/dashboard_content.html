@@ -1,0 +1,66 @@
+<div id="dashboard-content" hx-get="/partials/dashboard-content" hx-trigger="specchange from:body" hx-swap="outerHTML">
+<h1>Dashboard</h1>
+
+<div class="summary-bar">
+    <div class="progress-container">
+        <div class="progress-bar" style="width: {{ overall_percent }}%"></div>
+    </div>
+    <span class="progress-text">{{ done_tasks }}/{{ total_tasks }} tasks complete ({{ overall_percent }}%)</span>
+</div>
+
+<div class="status-pills">
+    {% for status, count in status_counts.items() %}
+    <span class="pill pill-{{ status }}">{{ status }}: {{ count }}</span>
+    {% endfor %}
+</div>
+
+<div class="spec-grid">
+    {% for group in groups %}
+    <a href="/spec/{{ group.name }}" class="spec-card">
+        <div class="card-header">
+            <h3>{{ group.title }}</h3>
+            <span class="badge badge-{{ group.status.value }}">{{ group.status.value }}</span>
+        </div>
+        <div class="card-meta">
+            <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+            {% if group.format_type != "generic" %}
+            <span class="format-badge">{{ group.format_type }}</span>
+            {% endif %}
+            {% if group.tags %}
+            <span class="tags">{{ group.tags | join(', ') }}</span>
+            {% endif %}
+        </div>
+        {% if group.task_total > 0 %}
+        <div class="card-progress">
+            <div class="progress-container small">
+                <div class="progress-bar" style="width: {{ group.task_percent }}%"></div>
+            </div>
+            <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
+        </div>
+        {% endif %}
+        {% if group.all_phases %}
+        <div class="card-phases">
+            {% for phase in group.all_phases %}
+            <div class="phase-mini">
+                <span class="phase-mini-label">P{{ phase.number }}</span>
+                <div class="progress-container small" style="flex: 1;">
+                    <div class="progress-bar" style="width: {{ phase.task_percent }}%"></div>
+                </div>
+                <span class="phase-mini-count">{{ phase.task_done }}/{{ phase.task_total }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="card-files">
+            {% for ft in group.files.keys() %}
+            <span class="file-badge">{{ ft }}</span>
+            {% endfor %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+{% if not groups %}
+<p class="empty-state">No specs found. Run <code>spec-view init</code> to get started.</p>
+{% endif %}
+</div>

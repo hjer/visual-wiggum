@@ -1,0 +1,76 @@
+<div id="spec-content" hx-get="/partials/spec-content/{{ group.name }}" hx-trigger="specchange from:body" hx-swap="outerHTML">
+<div class="spec-header">
+    <a href="/" class="back-link">&larr; Dashboard</a>
+    <h1>
+        {{ group.title }}
+        {% if format_type != "generic" %}
+        <span class="format-badge">{{ format_type }}</span>
+        {% endif %}
+    </h1>
+    <div class="spec-meta">
+        <span class="badge badge-{{ group.status.value }}">{{ group.status.value }}</span>
+        <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+        {% for tag in group.tags %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+        {% for s in stories %}
+        <span class="story-tag story-{{ s | lower }}">{{ s }}</span>
+        {% endfor %}
+    </div>
+    {% if group.task_total > 0 %}
+    <div class="spec-progress">
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {{ group.task_percent }}%"></div>
+        </div>
+        <span>{{ group.task_done }}/{{ group.task_total }} tasks ({{ group.task_percent }}%)</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if phases %}
+<h2>Phases</h2>
+<div class="task-list">
+    {% for phase in phases %}
+    <div class="phase-section">
+        <div class="phase-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span class="phase-title">Phase {{ phase.number }}: {{ phase.title }}</span>
+            <span class="phase-progress">{{ phase.task_done }}/{{ phase.task_total }}</span>
+            {% if phase.task_total > 0 %}
+            <div class="progress-container small" style="width: 80px; display: inline-block; vertical-align: middle; margin-left: 0.5rem;">
+                <div class="progress-bar" style="width: {{ phase.task_percent }}%"></div>
+            </div>
+            {% endif %}
+        </div>
+        {% for task in phase.tasks %}
+        <div class="task-item {% if task.done %}done{% endif %} depth-0">
+            <span class="task-check">{% if task.done %}&#x2713;{% else %}&#x25cb;{% endif %}</span>
+            {% if task.task_id %}<span class="task-id">{{ task.task_id }}</span>{% endif %}
+            {% if task.parallel %}<span class="parallel-badge">&#x21c4;</span>{% endif %}
+            {% if task.story %}<span class="story-tag story-{{ task.story | lower }}">{{ task.story }}</span>{% endif %}
+            <span class="task-text">{{ task.text }}</span>
+        </div>
+        {% endfor %}
+        {% if phase.checkpoint %}
+        <div class="checkpoint">&#x23f8; Checkpoint: {{ phase.checkpoint }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="tab-nav">
+    {% for ft in rendered.keys() %}
+    <button class="tab-btn {% if loop.first %}active{% endif %}" onclick="showTab('{{ ft }}')">{{ ft | title }}</button>
+    {% endfor %}
+</div>
+
+<div class="tab-content">
+    {% for ft, html in rendered.items() %}
+    <div class="tab-pane {% if loop.first %}active{% endif %}" id="tab-{{ ft }}">
+        <div class="rendered-md">
+            {{ html | safe }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>

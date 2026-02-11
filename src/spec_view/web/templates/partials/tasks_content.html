@@ -1,0 +1,92 @@
+<div id="tasks-content" hx-get="/partials/tasks-content" hx-trigger="specchange from:body" hx-swap="outerHTML">
+<h1>Task Board</h1>
+
+<div class="task-summary">
+    <span>{{ done }}/{{ total }} tasks complete</span>
+    <div class="progress-container">
+        <div class="progress-bar" style="width: {% if total > 0 %}{{ (done / total * 100) | int }}{% else %}0{% endif %}%"></div>
+    </div>
+</div>
+
+<div class="kanban">
+    {% for status, cards in columns.items() %}
+    <div class="kanban-column">
+        <h3 class="kanban-header kanban-{{ status }}">{{ status }} <span class="count">({{ cards | length }})</span></h3>
+        {% for card in cards %}
+        <a href="/spec/{{ card.name }}" class="kanban-card">
+            <div class="card-title">{{ card.title }}</div>
+            <div class="card-meta">
+                <span class="priority priority-{{ card.priority }}">{{ card.priority }}</span>
+                {% if card.task_total > 0 %}
+                <span class="task-count">{{ card.task_done }}/{{ card.task_total }}</span>
+                {% endif %}
+            </div>
+            {% for tag in card.tags %}
+            <span class="tag small">{{ tag }}</span>
+            {% endfor %}
+        </a>
+        {% endfor %}
+        {% if not cards %}
+        <div class="kanban-empty">No specs</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<h2>All Tasks</h2>
+
+{% if all_phases %}
+<div class="task-list">
+    {% for phase in all_phases %}
+    <div class="phase-section">
+        <div class="phase-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span class="phase-title">Phase {{ phase.number }}: {{ phase.title }}</span>
+            <span class="phase-progress">{{ phase.task_done }}/{{ phase.task_total }}</span>
+            {% if phase.task_total > 0 %}
+            <div class="progress-container small" style="width: 80px; display: inline-block; vertical-align: middle; margin-left: 0.5rem;">
+                <div class="progress-bar" style="width: {{ phase.task_percent }}%"></div>
+            </div>
+            {% endif %}
+        </div>
+        {% for task in phase.tasks %}
+        <div class="task-item {% if task.done %}done{% endif %} depth-0">
+            <span class="task-check">{% if task.done %}&#x2713;{% else %}&#x25cb;{% endif %}</span>
+            {% if task.task_id %}<span class="task-id">{{ task.task_id }}</span>{% endif %}
+            {% if task.parallel %}<span class="parallel-badge">&#x21c4;</span>{% endif %}
+            {% if task.story %}<span class="story-tag story-{{ task.story | lower }}">{{ task.story }}</span>{% endif %}
+            <span class="task-text">{{ task.text }}</span>
+        </div>
+        {% endfor %}
+        {% if phase.checkpoint %}
+        <div class="checkpoint">&#x23f8; Checkpoint: {{ phase.checkpoint }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="task-list">
+    {% macro render_tasks(tasks, depth) %}
+    {% for task in tasks %}
+    <div class="task-item {% if task.done %}done{% endif %} depth-{{ depth }}">
+        <span class="task-check">{% if task.done %}&#x2713;{% else %}&#x25cb;{% endif %}</span>
+        {% if task.task_id %}<span class="task-id">{{ task.task_id }}</span>{% endif %}
+        {% if task.parallel %}<span class="parallel-badge">&#x21c4;</span>{% endif %}
+        {% if task.story %}<span class="story-tag story-{{ task.story | lower }}">{{ task.story }}</span>{% endif %}
+        <span class="task-text">
+            {{ task.text }}
+            {% if task.children %}<span class="subtask-count">{{ task.subtask_done }}/{{ task.subtask_total }}</span>{% endif %}
+        </span>
+        {% if depth == 0 %}<span class="task-spec">{{ task.spec_name }}</span>{% endif %}
+    </div>
+    {% if task.children %}
+    {{ render_tasks(task.children, depth + 1) }}
+    {% endif %}
+    {% endfor %}
+    {% endmacro %}
+    {{ render_tasks(all_task_trees, 0) }}
+    {% if not all_tasks %}
+    <p class="empty-state">No tasks found in any specs.</p>
+    {% endif %}
+</div>
+{% endif %}
+</div>

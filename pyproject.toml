@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spec-view"
+version = "0.1.0"
+description = "Universal spec-driven development dashboard"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "spec-view contributors" }]
+dependencies = [
+    "click>=8.0",
+    "python-frontmatter>=1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "textual>=0.40",
+    "fastapi>=0.100",
+    "uvicorn[standard]>=0.20",
+    "jinja2>=3.1",
+    "watchfiles>=0.20",
+    "markdown>=3.5",
+]
+
+[project.scripts]
+spec-view = "spec_view.cli:cli"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "httpx>=0.24",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spec_view"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
