@@ -68,3 +68,4 @@ Thumbs.db
 # Local config overrides
 *.local
 local_settings.py
+/.spec-view

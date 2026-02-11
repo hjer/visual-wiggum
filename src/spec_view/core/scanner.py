@@ -35,21 +35,32 @@ def discover_spec_files(root: Path, config: Config) -> list[Path]:
     return files
 
 
+def _is_spec_path_root(parent: Path, root: Path, config: Config) -> bool:
+    """Check if a directory is a configured spec_path root."""
+    for spec_path_str in config.spec_paths:
+        spec_dir = root / spec_path_str
+        if parent == spec_dir or parent == spec_dir.resolve():
+            return True
+    return False
+
+
 def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
     """Scan for spec files and group them by directory."""
     files = discover_spec_files(root, config)
     groups: dict[str, SpecGroup] = {}
-    standalone: list[SpecFile] = []
 
     for path in files:
         spec_file = parse_spec_file(path)
         parent = path.parent
 
-        # Check if this is inside a spec group directory (has sibling spec files)
-        siblings = list(parent.glob("*.md"))
-        is_group = len(siblings) > 1 or parent.name != path.stem
+        # Files directly in a spec_path root (or project root) are standalone.
+        # Files in subdirectories of a spec_path are grouped by directory.
+        is_in_subdir = (
+            parent != root
+            and not _is_spec_path_root(parent, root, config)
+        )
 
-        if is_group and parent != root:
+        if is_in_subdir:
             group_name = parent.name
             if group_name not in groups:
                 groups[group_name] = SpecGroup(
