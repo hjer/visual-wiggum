@@ -9,17 +9,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development
 
 ```bash
-# Install in development mode
-pip install -e ".[dev]"
+# Install in development mode (requires venv)
+.venv/bin/pip install -e ".[dev]"
 
 # Run all tests
-python -m pytest
+.venv/bin/pytest
 
 # Run a single test file
-python -m pytest tests/test_parser.py
+.venv/bin/pytest tests/test_parser.py
 
 # Run a specific test
-python -m pytest tests/test_parser.py::test_parse_tasks_checked -v
+.venv/bin/pytest tests/test_parser.py::test_parse_tasks_checked -v
 
 # Launch TUI
 spec-view
@@ -31,7 +31,7 @@ spec-view serve
 spec-view detect
 ```
 
-Build system: **Hatchling** (pyproject.toml). Entry point: `spec-view = spec_view.cli:cli`.
+Build system: **Hatchling** (pyproject.toml). Entry point: `spec-view = spec_view.cli:cli`. Python venv at `.venv/`.
 
 ## Architecture
 
@@ -40,16 +40,24 @@ The package lives in `src/spec_view/` and has three layers:
 ### Core (`core/`)
 - **models.py** — Frozen-style dataclasses: `Status`/`Priority` enums, `Task` (recursive tree with subtask counting), `Phase`, `SpecFile`, `SpecGroup` (aggregates related files in a directory). All computed properties (task totals, percentages) are derived, not stored.
 - **parser.py** — Regex-based markdown parsing pipeline: frontmatter extraction → format detection (spec-kit/kiro/openspec/generic) → checkbox task extraction with indentation-based tree building → phase parsing → metadata stripping (task IDs `T001`, parallel `[P]`, story refs `[US1]`).
-- **scanner.py** — Walks configured `spec_paths`, applies include/exclude glob patterns, groups files by directory into `SpecGroup` objects.
+- **scanner.py** — Walks configured `spec_paths`, applies include/exclude glob patterns, groups files by directory into `SpecGroup` objects. Auto-tags files in `archive/` directories with the `"archive"` tag.
 - **detector.py** — Auto-detects spec sources by walking for marker directories (`specs/`, `.kiro/`, `openspec/changes/*/specs/`, `.spec/`, `docs/`). Max depth 4, skips node_modules/.git/.venv.
 - **config.py** — Loads/saves `.spec-view/config.yaml`. Falls back to auto-detection if no config exists.
-- **watcher.py** — Background thread watches `.md`/`.yaml` changes via `watchfiles`. `SpecChangeNotifier` provides async pub/sub for SSE.
+- **watcher.py** — Background thread watches `.md`/`.yaml` changes via `watchfiles`. Watches both `spec_paths` directories and parent directories of `include` pattern matches. `SpecChangeNotifier` provides async pub/sub for SSE.
 
 ### TUI (`tui/`)
-Built on **Textual**. Main app (`app.py`) runs a background watcher thread and uses `call_from_thread()` for safe UI updates. Three screens: dashboard (two-pane spec tree + detail), spec view, task board. Keybindings: q/d/t/r.
+Built on **Textual**. Main app (`app.py`) runs a background watcher thread and uses `call_from_thread()` for safe UI updates. Three screens: dashboard (two-pane spec tree + detail), spec view, task board.
+
+- **dashboard.py** — Two-pane layout: spec tree (left) + scrollable detail pane (right). Active specs shown normally, archived specs grouped under a collapsible "Archive" node. Status bar excludes archived specs from active counts.
+- **spec_view.py** — `SpecDetailView` extends `VerticalScroll` with an inner `Static` for rendered content. Vim-style navigation: `j`/`k` scroll, `h` returns focus to tree. Bindings shown in footer when focused.
+- **task_board.py** — Tasks grouped under spec name headings with task counts. Archived tasks in a dimmed section at bottom.
+- **app.py** — Keybindings: `q` quit, `d` dashboard, `t` tasks, `r` refresh.
 
 ### Web (`web/`)
 **FastAPI** with **Jinja2** templates and **htmx** for partial updates. Full-page routes (`/`, `/spec/{name}`, `/tasks`) plus `/partials/*` endpoints for htmx fragments. `/events` SSE endpoint with debounced notifications for live reload.
+
+- Groups are partitioned into active/archived via `_partition_groups()` helper.
+- Dashboard and tasks pages have collapsible archive sections (collapsed by default, click to expand).
 
 ### CLI (`cli.py`)
 **Click** command group. Commands: `init`, default (TUI), `watch`, `serve`, `list`, `validate`, `detect`, `config`. Auto-resolves config via `_resolve_config()` which tries config file then auto-detection.
@@ -59,6 +67,7 @@ Built on **Textual**. Main app (`app.py`) runs a background watcher thread and u
 - All internal paths use `pathlib.Path`
 - Task trees are built by indentation depth; `Task.children` forms the recursive structure
 - `SpecGroup` aggregates a directory's spec/design/tasks files and exposes unified task counts
+- Archive detection: scanner auto-tags specs in `archive/` directories; UIs partition on `"archive" in g.tags`
 - Format detection (`detect_format()`) uses heuristics: phase headers for spec-kit, path patterns for kiro, numbered sections for openspec
 - Config is stored in `.spec-view/config.yaml`, created on demand
 
@@ -69,6 +78,14 @@ Built on **Textual**. Main app (`app.py`) runs a background watcher thread and u
 - Move from `specs/` to `specs/archive/`
 - Update `specs/todo.md` to mark the item as `[x]`
 
+## Post-Implementation Rule
+
+After completing any fix, feature, or loop iteration:
+1. Update `IMPLEMENTATION_PLAN.md` — mark tasks as done, add new sections for work completed
+2. Update `specs/todo.md` — add completed items, add new feature items if applicable
+3. Update `CLAUDE.md` — reflect any architectural changes, new patterns, or new files
+4. Update `AGENTS.md` — if agent workflow or conventions changed
+
 ## Testing
 
-~36 tests across 4 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, and scanner glob patterns.
+89 tests across 4 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, and scanner glob patterns.
