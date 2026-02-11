@@ -78,11 +78,15 @@ Built on **Textual**. Main app (`app.py`) runs a background watcher thread and u
 - Move from `specs/` to `specs/archive/`
 - Update `specs/todo.md` to mark the item as `[x]`
 
+## Specs Are Immutable
+
+Files in `specs/` are requirements — **never modify them** during build or implementation. All progress tracking, gap analysis, and context updates go in `IMPLEMENTATION_PLAN.md`. Only humans create or edit specs.
+
 ## Post-Implementation Rule
 
 After completing any fix, feature, or loop iteration:
 1. Update `IMPLEMENTATION_PLAN.md` — mark tasks as done, add new sections for work completed
-2. Update `specs/todo.md` — add completed items, add new feature items if applicable
+2. Update `specs/todo.md` — check off completed items (this is the only `specs/` file agents may update)
 3. Update `CLAUDE.md` — reflect any architectural changes, new patterns, or new files
 4. Update `AGENTS.md` — if agent workflow or conventions changed
 

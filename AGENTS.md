@@ -34,15 +34,17 @@ Note: Always use `.venv/bin/pytest` directly — system python lacks dependencie
 
 ## Development Loop
 
-1. **Spec** — Write the spec in `specs/` (or reference an existing one)
+1. **Spec** — Humans write specs in `specs/`. Agents read them but **never modify them**.
 2. **Plan** — Gap analysis and task breakdown go in `IMPLEMENTATION_PLAN.md`
 3. **Implement** — Write code, run tests
 4. **Update Context** — After every fix/feature/loop iteration, update:
    - `IMPLEMENTATION_PLAN.md` — mark tasks done, add sections for new work
-   - `specs/todo.md` — check off completed items, add new ones
+   - `specs/todo.md` — check off completed items (only `specs/` file agents may update)
    - `CLAUDE.md` — reflect architectural changes, new patterns, new files
    - `AGENTS.md` — update if workflow or conventions changed
 5. **Archive** — When a spec is fully done, move to `specs/archive/`, set `status: done`
+
+**Specs are immutable requirements.** Never modify files in `specs/` (except `todo.md` checkboxes). All progress tracking and context updates go in `IMPLEMENTATION_PLAN.md`.
 
 Context updates are mandatory, not optional. Stale docs cause stale decisions.
 
