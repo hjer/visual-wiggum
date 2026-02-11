@@ -12,20 +12,40 @@ from watchfiles import watch
 from .config import Config
 
 
+def _collect_watch_paths(root: Path, config: Config) -> list[Path]:
+    """Build the list of paths to watch from spec_paths and include patterns."""
+    seen: set[Path] = set()
+    paths: list[Path] = []
+
+    for spec_path_str in config.spec_paths:
+        spec_dir = root / spec_path_str
+        if spec_dir.is_dir():
+            resolved = spec_dir.resolve()
+            if resolved not in seen:
+                paths.append(spec_dir)
+                seen.add(resolved)
+
+    for pattern in config.include:
+        for match in root.glob(pattern):
+            parent = match.parent if match.is_file() else match
+            resolved = parent.resolve()
+            if resolved not in seen:
+                paths.append(parent)
+                seen.add(resolved)
+
+    if not paths:
+        paths.append(root)
+
+    return paths
+
+
 def watch_specs(
     root: Path,
     config: Config,
     on_change: Callable[[], None],
 ) -> None:
     """Watch spec directories for changes and call on_change."""
-    watch_paths: list[Path] = []
-    for spec_path_str in config.spec_paths:
-        spec_dir = root / spec_path_str
-        if spec_dir.is_dir():
-            watch_paths.append(spec_dir)
-
-    if not watch_paths:
-        watch_paths.append(root)
+    watch_paths = _collect_watch_paths(root, config)
 
     for _changes in watch(
         *watch_paths,
@@ -63,14 +83,7 @@ def start_watcher_thread(
     loop: asyncio.AbstractEventLoop,
 ) -> threading.Thread:
     """Start a background thread that watches for file changes and notifies via the event loop."""
-    watch_paths: list[Path] = []
-    for spec_path_str in config.spec_paths:
-        spec_dir = root / spec_path_str
-        if spec_dir.is_dir():
-            watch_paths.append(spec_dir)
-
-    if not watch_paths:
-        watch_paths.append(root)
+    watch_paths = _collect_watch_paths(root, config)
 
     def _watch() -> None:
         for _changes in watch(

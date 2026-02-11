@@ -1,5 +1,5 @@
 ---
-title: spec-view development todo
+title: spec-view human todo-list
 status: in-progress
 priority: high
 tags: [meta]
@@ -16,3 +16,6 @@ Tracking all in-flight specs and features for the spec-view project.
 ## Completed
 - [X] Track IMPLEMENTATION_PLAN.md in spec-view (`specs/track-implementation-plan.md`)
 - [X] Add archive function in tui and webui, tag with archive and hide under own many
+- [X] TUI detail pane scrolling with j/k/h vim navigation
+- [X] TUI task board: group tasks under spec headings
+- [X] Watcher: watch include pattern files for live reload

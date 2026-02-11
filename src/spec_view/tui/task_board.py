@@ -69,25 +69,8 @@ class TaskBoardScreen(Screen):
         for group in active:
             all_phases.extend(group.all_phases)
 
-        if all_phases:
-            lines.extend(self._render_phase_board(all_phases))
-        else:
-            all_trees: list[Task] = []
-            for group in active:
-                all_trees.extend(group.all_task_trees)
-
-            pending_trees = [t for t in all_trees if not t.done]
-            done_trees = [t for t in all_trees if t.done]
-
-            if pending_trees:
-                lines.append("[yellow bold]Pending[/yellow bold]")
-                lines.extend(self._render_task_tree(pending_trees, indent=1))
-                lines.append("")
-
-            if done_trees:
-                lines.append("[green bold]Done[/green bold]")
-                lines.extend(self._render_task_tree(done_trees, indent=1))
-                lines.append("")
+        for group in active:
+            lines.extend(self._render_group_tasks(group))
 
         if not all_flat:
             lines.append("[dim]No tasks found in any specs.[/dim]")
@@ -101,12 +84,28 @@ class TaskBoardScreen(Screen):
             lines.append(
                 f"[dim bold]Archive[/dim bold]  [dim]({archived_done}/{len(archived_tasks)} complete)[/dim]"
             )
-            archived_trees: list[Task] = []
             for group in archived:
-                archived_trees.extend(group.all_task_trees)
-            lines.extend(self._render_task_tree(archived_trees, indent=1))
+                lines.extend(self._render_group_tasks(group, dim=True))
 
         return "\n".join(lines)
+
+    def _render_group_tasks(self, group: SpecGroup, dim: bool = False) -> list[str]:
+        """Render tasks for a single spec group under a heading."""
+        if not group.all_tasks:
+            return []
+        lines: list[str] = []
+        task_info = f" ({group.task_done}/{group.task_total})"
+        if dim:
+            lines.append(f"  [dim]{group.title}{task_info}[/dim]")
+        else:
+            lines.append(f"[bold]{group.title}[/bold]{task_info}")
+        phases = group.all_phases
+        if phases:
+            lines.extend(self._render_phase_board(phases))
+        else:
+            lines.extend(self._render_task_tree(group.all_task_trees, indent=1))
+        lines.append("")
+        return lines
 
     def _render_phase_board(self, phases: list[Phase]) -> list[str]:
         """Render task board grouped by phase."""
