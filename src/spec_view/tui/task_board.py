@@ -50,8 +50,11 @@ class TaskBoardScreen(Screen):
 
     def _build_content(self) -> str:
         """Build the full Rich-formatted task board text."""
+        active = [g for g in self.groups if "archive" not in g.tags]
+        archived = [g for g in self.groups if "archive" in g.tags]
+
         all_flat: list[Task] = []
-        for group in self.groups:
+        for group in active:
             all_flat.extend(group.all_tasks)
 
         total = len(all_flat)
@@ -61,16 +64,16 @@ class TaskBoardScreen(Screen):
             f"[bold]Task Board[/bold]  ({done_count}/{total} complete)\n",
         ]
 
-        # Check if any group has phases
+        # Check if any active group has phases
         all_phases: list[Phase] = []
-        for group in self.groups:
+        for group in active:
             all_phases.extend(group.all_phases)
 
         if all_phases:
             lines.extend(self._render_phase_board(all_phases))
         else:
             all_trees: list[Task] = []
-            for group in self.groups:
+            for group in active:
                 all_trees.extend(group.all_task_trees)
 
             pending_trees = [t for t in all_trees if not t.done]
@@ -88,6 +91,20 @@ class TaskBoardScreen(Screen):
 
         if not all_flat:
             lines.append("[dim]No tasks found in any specs.[/dim]")
+
+        if archived:
+            archived_tasks: list[Task] = []
+            for group in archived:
+                archived_tasks.extend(group.all_tasks)
+            archived_done = sum(1 for t in archived_tasks if t.done)
+            lines.append("")
+            lines.append(
+                f"[dim bold]Archive[/dim bold]  [dim]({archived_done}/{len(archived_tasks)} complete)[/dim]"
+            )
+            archived_trees: list[Task] = []
+            for group in archived:
+                archived_trees.extend(group.all_task_trees)
+            lines.extend(self._render_task_tree(archived_trees, indent=1))
 
         return "\n".join(lines)
 

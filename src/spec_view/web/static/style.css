@@ -654,6 +654,46 @@ h2 {
     text-align: right;
 }
 
+/* Archive section */
+.archive-section {
+    margin-top: 2rem;
+}
+
+.archive-section.collapsed .spec-grid,
+.archive-section.collapsed .task-list {
+    display: none;
+}
+
+.archive-section.collapsed .archive-arrow {
+    display: inline-block;
+}
+
+.archive-section:not(.collapsed) .archive-arrow {
+    display: inline-block;
+    transform: rotate(90deg);
+}
+
+.archive-header {
+    cursor: pointer;
+    user-select: none;
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-radius: var(--radius);
+}
+
+.archive-header:hover {
+    color: var(--text);
+    background: var(--surface);
+}
+
+.archive-arrow {
+    display: inline-block;
+    transition: transform 0.15s ease;
+    font-size: 0.75rem;
+    margin-right: 0.25rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .kanban {

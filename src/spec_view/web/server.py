@@ -45,20 +45,29 @@ def create_app(root: Path, config: Config) -> FastAPI:
     def _get_groups() -> list[SpecGroup]:
         return scan_specs(root, config)
 
+    def _partition_groups(
+        groups: list[SpecGroup],
+    ) -> tuple[list[SpecGroup], list[SpecGroup]]:
+        active = [g for g in groups if "archive" not in g.tags]
+        archived = [g for g in groups if "archive" in g.tags]
+        return active, archived
+
     def _dashboard_context(request: Request) -> dict:
         groups = _get_groups()
-        total_tasks = sum(g.task_total for g in groups)
-        done_tasks = sum(g.task_done for g in groups)
+        active, archived = _partition_groups(groups)
+        total_tasks = sum(g.task_total for g in active)
+        done_tasks = sum(g.task_done for g in active)
         overall_percent = int(done_tasks / total_tasks * 100) if total_tasks else 0
 
         status_counts: dict[str, int] = {}
-        for g in groups:
+        for g in active:
             s = g.status.value
             status_counts[s] = status_counts.get(s, 0) + 1
 
         return {
             "request": request,
-            "groups": groups,
+            "groups": active,
+            "archived_groups": archived,
             "total_tasks": total_tasks,
             "done_tasks": done_tasks,
             "overall_percent": overall_percent,
@@ -67,6 +76,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     def _tasks_context(request: Request) -> dict:
         groups = _get_groups()
+        active, archived = _partition_groups(groups)
 
         columns: dict[str, list[dict]] = {
             "draft": [],
@@ -76,7 +86,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "blocked": [],
         }
 
-        for group in groups:
+        for group in active:
             col = group.status.value
             if col in columns:
                 columns[col].append(
@@ -95,10 +105,16 @@ def create_app(root: Path, config: Config) -> FastAPI:
         all_tasks = []
         all_task_trees = []
         all_phases = []
-        for group in groups:
+        for group in active:
             all_tasks.extend(group.all_tasks)
             all_task_trees.extend(group.all_task_trees)
             all_phases.extend(group.all_phases)
+
+        archived_tasks = []
+        archived_task_trees = []
+        for group in archived:
+            archived_tasks.extend(group.all_tasks)
+            archived_task_trees.extend(group.all_task_trees)
 
         return {
             "request": request,
@@ -108,6 +124,8 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "all_phases": all_phases,
             "total": len(all_tasks),
             "done": sum(1 for t in all_tasks if t.done),
+            "archived_tasks": archived_tasks,
+            "archived_task_trees": archived_task_trees,
         }
 
     def _spec_context(request: Request, name: str) -> dict | None:

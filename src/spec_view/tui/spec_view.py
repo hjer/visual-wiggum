@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from textual.binding import Binding
+from textual.containers import VerticalScroll
 from textual.widgets import Static
 
 from ..core.models import Phase, SpecGroup, Status, Task
@@ -15,18 +17,26 @@ STATUS_COLORS = {
 }
 
 
-class SpecDetailView(Static):
+class SpecDetailView(VerticalScroll, can_focus=True):
     """Shows detail for a selected spec group."""
 
     DEFAULT_CSS = """
     SpecDetailView {
         padding: 1 2;
-        overflow-y: auto;
     }
     """
 
-    def __init__(self, **kwargs: object) -> None:
-        super().__init__("Select a spec from the tree to view details.", **kwargs)
+    BINDINGS = [
+        Binding("j", "scroll_down", "Scroll Down", show=True),
+        Binding("k", "scroll_up", "Scroll Up", show=True),
+        Binding("h", "focus_tree", "Back", show=True),
+    ]
+
+    def action_focus_tree(self) -> None:
+        self.screen.query_one("#spec-tree").focus()
+
+    def compose(self):
+        yield Static("Select a spec from the tree to view details.", id="detail-body")
 
     def show_group(self, group: SpecGroup) -> None:
         color = STATUS_COLORS.get(group.status, "")
@@ -53,13 +63,12 @@ class SpecDetailView(Static):
             lines.append(f"[bold underline]{file_type.upper()}[/bold underline]")
             lines.append("")
             body = spec_file.body.strip()
-            if len(body) > 2000:
-                body = body[:2000] + "\n..."
             body = body.replace("[", "\\[")
             lines.append(body)
             lines.append("")
 
-        self.update("\n".join(lines))
+        self.query_one("#detail-body", Static).update("\n".join(lines))
+        self.scroll_home(animate=False)
 
     def _render_phases(self, phases: list[Phase]) -> list[str]:
         """Render phase-structured view."""

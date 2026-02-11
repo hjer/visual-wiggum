@@ -19,18 +19,23 @@ def _matches_any(path: Path, patterns: list[str], root: Path) -> bool:
 def discover_spec_files(root: Path, config: Config) -> list[Path]:
     """Find all markdown files matching config patterns."""
     files: list[Path] = []
+    seen: set[Path] = set()
 
     for spec_path_str in config.spec_paths:
         spec_dir = root / spec_path_str
         if spec_dir.is_dir():
             for md in sorted(spec_dir.rglob("*.md")):
-                if not _matches_any(md, config.exclude, root):
+                resolved = md.resolve()
+                if resolved not in seen and not _matches_any(md, config.exclude, root):
                     files.append(md)
+                    seen.add(resolved)
 
     for pattern in config.include:
         for md in sorted(root.glob(pattern)):
-            if md not in files and not _matches_any(md, config.exclude, root):
+            resolved = md.resolve()
+            if resolved not in seen and not _matches_any(md, config.exclude, root):
                 files.append(md)
+                seen.add(resolved)
 
     return files
 
@@ -52,6 +57,10 @@ def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
     for path in files:
         spec_file = parse_spec_file(path)
         parent = path.parent
+
+        # Auto-tag specs in an archive directory
+        if "archive" in path.parts and "archive" not in spec_file.tags:
+            spec_file.tags.append("archive")
 
         # Files directly in a spec_path root (or project root) are standalone.
         # Files in subdirectories of a spec_path are grouped by directory.

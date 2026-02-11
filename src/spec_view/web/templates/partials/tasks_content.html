@@ -89,4 +89,31 @@
     {% endif %}
 </div>
 {% endif %}
+
+{% if archived_task_trees %}
+<div class="archive-section collapsed" style="margin-top: 2rem;">
+    <div class="archive-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <span class="archive-arrow">&#x25b8;</span> Archive ({{ archived_tasks|length }} tasks)
+    </div>
+    <div class="task-list">
+        {% macro render_archived_tasks(tasks, depth) %}
+        {% for task in tasks %}
+        <div class="task-item {% if task.done %}done{% endif %} depth-{{ depth }}">
+            <span class="task-check">{% if task.done %}&#x2713;{% else %}&#x25cb;{% endif %}</span>
+            {% if task.task_id %}<span class="task-id">{{ task.task_id }}</span>{% endif %}
+            <span class="task-text">
+                {{ task.text }}
+                {% if task.children %}<span class="subtask-count">{{ task.subtask_done }}/{{ task.subtask_total }}</span>{% endif %}
+            </span>
+            {% if depth == 0 %}<span class="task-spec">{{ task.spec_name }}</span>{% endif %}
+        </div>
+        {% if task.children %}
+        {{ render_archived_tasks(task.children, depth + 1) }}
+        {% endif %}
+        {% endfor %}
+        {% endmacro %}
+        {{ render_archived_tasks(archived_task_trees, 0) }}
+    </div>
+</div>
+{% endif %}
 </div>

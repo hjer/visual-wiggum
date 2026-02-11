@@ -60,7 +60,44 @@
     {% endfor %}
 </div>
 
-{% if not groups %}
+{% if archived_groups %}
+<div class="archive-section collapsed">
+    <div class="archive-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <span class="archive-arrow">&#x25b8;</span> Archive ({{ archived_groups|length }})
+    </div>
+    <div class="spec-grid">
+        {% for group in archived_groups %}
+        <a href="/spec/{{ group.name }}" class="spec-card">
+            <div class="card-header">
+                <h3>{{ group.title }}</h3>
+                <span class="badge badge-{{ group.status.value }}">{{ group.status.value }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+                {% if group.format_type != "generic" %}
+                <span class="format-badge">{{ group.format_type }}</span>
+                {% endif %}
+            </div>
+            {% if group.task_total > 0 %}
+            <div class="card-progress">
+                <div class="progress-container small">
+                    <div class="progress-bar" style="width: {{ group.task_percent }}%"></div>
+                </div>
+                <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
+            </div>
+            {% endif %}
+            <div class="card-files">
+                {% for ft in group.files.keys() %}
+                <span class="file-badge">{{ ft }}</span>
+                {% endfor %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if not groups and not archived_groups %}
 <p class="empty-state">No specs found. Run <code>spec-view init</code> to get started.</p>
 {% endif %}
 </div>
