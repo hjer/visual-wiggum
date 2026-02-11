@@ -29,6 +29,14 @@ pip install -e ".[dev]"
   - `web/` — FastAPI server, Jinja2 templates, htmx partials
 - `tests/` — pytest tests
 - `specs/` — requirement specs (do not modify during build)
+- `specs/archive/` — completed specs (never delete, status: done)
+
+## Spec Archive Rules
+
+- Never delete finished specs
+- Set `status: done` in frontmatter
+- Move from `specs/` to `specs/archive/`
+- Update `specs/todo.md` to mark the item as `[x]`
 
 ## Conventions
 

@@ -62,6 +62,13 @@ Built on **Textual**. Main app (`app.py`) runs a background watcher thread and u
 - Format detection (`detect_format()`) uses heuristics: phase headers for spec-kit, path patterns for kiro, numbered sections for openspec
 - Config is stored in `.spec-view/config.yaml`, created on demand
 
+## Spec Archive Rules
+
+- Never delete finished specs
+- Set `status: done` in frontmatter
+- Move from `specs/` to `specs/archive/`
+- Update `specs/todo.md` to mark the item as `[x]`
+
 ## Testing
 
 ~36 tests across 4 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, and scanner glob patterns.

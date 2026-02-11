@@ -1,6 +1,6 @@
 ---
 title: Track IMPLEMENTATION_PLAN.md in spec-view
-status: ready
+status: done
 priority: high
 tags: [core, dogfooding]
 ---
