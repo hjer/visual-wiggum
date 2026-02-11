@@ -39,6 +39,6 @@ Users should be able to glance at the bottom of the screen at any time and see h
 
 ### Shared
 
-- Both UIs must compute progress identically: `sum(group.task_done) / sum(group.task_total)` across all loaded `SpecGroup` objects, as an integer percentage.
+- Both UIs must compute progress identically: `sum(group.task_done) / sum(group.task_total)` across **active** (non-archived) `SpecGroup` objects, as an integer percentage. Archived specs are excluded.
 - When there are zero tasks, show 0% and an empty bar (not an error).
 - The progress bar must not interfere with existing scrolling or layout on either UI.
