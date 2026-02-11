@@ -33,6 +33,15 @@ spec-view detect
 
 Build system: **Hatchling** (pyproject.toml). Entry point: `spec-view = spec_view.cli:cli`. Python venv at `.venv/`.
 
+## Releasing
+
+Releases are done via **GitHub release flow** — not manual PyPI uploads. To release:
+1. Bump version in `pyproject.toml`
+2. Commit and push to `main`
+3. Create a GitHub release (tag + release notes) — this triggers the CI pipeline to publish to PyPI
+
+Never run `twine upload` or `python -m build` manually for releases.
+
 ## Architecture
 
 The package lives in `src/spec_view/` and has three layers:
