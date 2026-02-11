@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "spec-view"
-version = "0.2.1"
+version = "0.2.2"
 description = "Universal spec-driven development dashboard"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,10 +20,6 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
 ]
 
-[project.urls]
-Homepage = "https://github.com/hjer/visual-wiggum"
-Repository = "https://github.com/hjer/visual-wiggum"
-Issues = "https://github.com/hjer/visual-wiggum/issues"
 dependencies = [
     "click>=8.0",
     "python-frontmatter>=1.0",
@@ -36,6 +32,11 @@ dependencies = [
     "watchfiles>=0.20",
     "markdown>=3.5",
 ]
+
+[project.urls]
+Homepage = "https://github.com/hjer/visual-wiggum"
+Repository = "https://github.com/hjer/visual-wiggum"
+Issues = "https://github.com/hjer/visual-wiggum/issues"
 
 [project.scripts]
 spec-view = "spec_view.cli:cli"
