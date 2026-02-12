@@ -185,6 +185,18 @@ def create_app(root: Path, config: Config) -> FastAPI:
             return HTMLResponse("", status_code=404)
         return templates.TemplateResponse("partials/spec_content.html", ctx)
 
+    @app.get("/partials/global-progress", response_class=HTMLResponse)
+    async def partial_global_progress(request: Request) -> HTMLResponse:
+        groups = _get_groups()
+        active, _archived = _partition_groups(groups)
+        total = sum(g.task_total for g in active)
+        done = sum(g.task_done for g in active)
+        percent = int(done / total * 100) if total else 0
+        return templates.TemplateResponse(
+            "partials/global_progress.html",
+            {"request": request, "done": done, "total": total, "percent": percent},
+        )
+
     # --- SSE endpoint ---
 
     @app.get("/events")

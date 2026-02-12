@@ -21,6 +21,11 @@
     <main class="container">
         {% block content %}{% endblock %}
     </main>
+    <div class="global-progress-bar"
+         hx-get="/partials/global-progress"
+         hx-trigger="load, specchange from:body"
+         hx-swap="innerHTML">
+    </div>
     <script>
     (function() {
         var dot = document.getElementById('live-dot');

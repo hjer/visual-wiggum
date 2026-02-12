@@ -96,9 +96,9 @@ The file watcher only watched `spec_paths` directories, so files matched by `con
 
 ---
 
-## Spec: Global Progress Bar (`specs/global-progress-bar.md`)
+## Spec: Global Progress Bar (`specs/global-progress-bar.md`) — DONE
 
-**Status:** ready | **Priority:** high | **Tags:** tui, web, ux
+**Status:** done | **Priority:** high | **Tags:** tui, web, ux
 
 ### Gap Analysis
 
@@ -144,17 +144,27 @@ The spec requires a persistent, always-visible progress bar at the bottom of bot
 ##### Files Modified
 - `src/spec_view/tui/task_board.py` — imported `ProgressBarWidget`, added CSS dock rule, yielded widget in `compose()` with `id="status-bar"`, updated `update_groups()` to refresh the progress bar
 
-#### 3. Web: Add global progress bar to `base.html` with partial endpoint and SSE wiring
-- [ ] Add `GET /partials/global-progress` route in `src/spec_view/web/server.py` returning a progress bar HTML fragment. Use `_partition_groups()` to get active groups only, compute `sum(g.task_done) / sum(g.task_total)` as integer percentage. 0% with empty bar when zero tasks.
-- [ ] Create a `partials/global_progress.html` template with the bar markup.
-- [ ] Add a fixed-position progress bar div to `src/spec_view/web/templates/base.html`, pinned to the bottom of the viewport. Use `hx-get="/partials/global-progress"` `hx-trigger="load, specchange from:body"` `hx-swap="innerHTML"`.
-- [ ] Style: `--bg` background, `--green` fill, subtle top border, ~32-36px tall. Add `padding-bottom` to `.container` in `style.css` to prevent content overlap.
+#### 3. Web: Add global progress bar to `base.html` with partial endpoint and SSE wiring — DONE
+- [x] Add `GET /partials/global-progress` route in `src/spec_view/web/server.py` returning a progress bar HTML fragment. Use `_partition_groups()` to get active groups only, compute `sum(g.task_done) / sum(g.task_total)` as integer percentage. 0% with empty bar when zero tasks.
+- [x] Create a `partials/global_progress.html` template with the bar markup.
+- [x] Add a fixed-position progress bar div to `src/spec_view/web/templates/base.html`, pinned to the bottom of the viewport. Use `hx-get="/partials/global-progress"` `hx-trigger="load, specchange from:body"` `hx-swap="innerHTML"`.
+- [x] Style: `--bg` background, `--green` fill, subtle top border, ~32-36px tall. Add `padding-bottom` to `.container` in `style.css` to prevent content overlap.
 - **Done when:** A thin progress bar is visible at the bottom of every page (`/`, `/tasks`, `/spec/{name}`), updates live via SSE, and doesn't overlap content.
 
-#### 4. Tests: Add tests for progress bar computation
-- [ ] Add tests verifying progress percentage: normal case, zero tasks (0%), all done (100%), single task.
-- [ ] Verify archived specs are excluded from progress computation.
+##### Files Created/Modified
+- `src/spec_view/web/server.py` — added `GET /partials/global-progress` endpoint using `_partition_groups()` for active-only progress
+- `src/spec_view/web/templates/partials/global_progress.html` — new template with fill div + percentage/fraction text
+- `src/spec_view/web/templates/base.html` — added `global-progress-bar` div with htmx auto-fetch on load and SSE specchange
+- `src/spec_view/web/static/style.css` — added `.global-progress-bar`, `.global-progress-fill`, `.global-progress-text` styles; added `padding-bottom: 4rem` to `.container`
+
+#### 4. Tests: Add tests for progress bar computation — DONE
+- [x] Add tests verifying progress percentage: normal case, zero tasks (0%), all done (100%), single task.
+- [x] Verify archived specs are excluded from progress computation.
+- [x] Verify global progress bar div appears on all full pages (dashboard, tasks).
 - **Done when:** `.venv/bin/pytest` passes with new tests covering the progress computation.
+
+##### Files Created
+- `tests/test_web_progress.py` — 6 async tests using httpx ASGITransport against the FastAPI app: normal percentage, zero tasks, all done, single task, archived exclusion, base.html presence
 
 ### Priority Order & Dependencies
 
