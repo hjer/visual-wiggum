@@ -103,4 +103,4 @@ After completing any fix, feature, or loop iteration:
 
 ## Testing
 
-176 tests across 9 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, scanner glob patterns, web endpoint behavior, plan section rendering, progress bar, and history views.
+187 tests across 10 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, scanner glob patterns, web endpoint behavior, plan section rendering, progress bar, history views, and archive sub-grouping.

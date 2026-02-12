@@ -95,7 +95,17 @@ class TaskBoardScreen(Screen):
             lines.append(
                 f"[dim bold]Archive[/dim bold]  [dim]({archived_done}/{len(archived_tasks)} complete)[/dim]"
             )
-            for group in archived:
+            archived_plan = [g for g in archived if "plan" in g.tags]
+            archived_specs = [g for g in archived if "plan" not in g.tags]
+            if archived_plan:
+                ap_done = sum(g.task_done for g in archived_plan)
+                ap_total = sum(g.task_total for g in archived_plan)
+                lines.append(
+                    f"  [dim bold]Implementation Plan[/dim bold]  [dim]({ap_done}/{ap_total} complete)[/dim]"
+                )
+                for group in archived_plan:
+                    lines.extend(self._render_group_tasks(group, dim=True))
+            for group in archived_specs:
                 lines.extend(self._render_group_tasks(group, dim=True))
 
         return "\n".join(lines)

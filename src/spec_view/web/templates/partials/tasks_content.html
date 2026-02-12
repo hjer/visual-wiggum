@@ -145,7 +145,25 @@
         {% endif %}
         {% endfor %}
         {% endmacro %}
-        {{ render_archived_tasks(archived_task_trees, 0) }}
+        {% if archived_plan_groups %}
+        {% set ap_done = archived_plan_groups | sum(attribute='task_done') %}
+        {% set ap_total = archived_plan_groups | sum(attribute='task_total') %}
+        <div class="archive-sub-heading">Implementation Plan ({{ ap_done }}/{{ ap_total }})</div>
+        {% for group in archived_plan_groups %}
+        <div class="plan-group-heading">
+            <span class="plan-group-title">{{ group.title }}</span>
+            <span class="plan-group-count">{{ group.task_done }}/{{ group.task_total }}</span>
+        </div>
+        {{ render_archived_tasks(group.all_task_trees, 0) }}
+        {% endfor %}
+        {% endif %}
+        {% for group in archived_spec_groups %}
+        <div class="plan-group-heading">
+            <span class="plan-group-title">{{ group.title }}</span>
+            <span class="plan-group-count">{{ group.task_done }}/{{ group.task_total }}</span>
+        </div>
+        {{ render_archived_tasks(group.all_task_trees, 0) }}
+        {% endfor %}
     </div>
 </div>
 {% endif %}

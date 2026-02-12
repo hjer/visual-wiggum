@@ -108,7 +108,17 @@ class DashboardScreen(Screen):
             archive_node = tree.root.add(
                 f"[dim]\u25b8 Archive ({len(archived)})[/dim]"
             )
-            for group in archived:
+            archived_plan = [g for g in archived if "plan" in g.tags]
+            archived_specs = [g for g in archived if "plan" not in g.tags]
+            if archived_plan:
+                ap_done = sum(g.task_done for g in archived_plan)
+                ap_total = sum(g.task_total for g in archived_plan)
+                plan_sub = archive_node.add(
+                    f"[dim]\u25b8 Implementation Plan ({ap_done}/{ap_total})[/dim]"
+                )
+                for group in archived_plan:
+                    self._add_group_node(plan_sub, group)
+            for group in archived_specs:
                 self._add_group_node(archive_node, group)
             archive_node.collapse()
 

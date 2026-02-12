@@ -661,7 +661,8 @@ h2 {
 }
 
 .archive-section.collapsed .spec-grid,
-.archive-section.collapsed .task-list {
+.archive-section.collapsed .task-list,
+.archive-section.collapsed .archive-sub-heading {
     display: none;
 }
 
@@ -693,6 +694,14 @@ h2 {
     transition: transform 0.15s ease;
     font-size: 0.75rem;
     margin-right: 0.25rem;
+}
+
+.archive-sub-heading {
+    padding: 0.5rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
 }
 
 /* Plan section */

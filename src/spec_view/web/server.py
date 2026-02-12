@@ -154,6 +154,9 @@ def create_app(root: Path, config: Config) -> FastAPI:
             archived_tasks.extend(group.all_tasks)
             archived_task_trees.extend(group.all_task_trees)
 
+        archived_plan = [g for g in archived if "plan" in g.tags]
+        archived_specs = [g for g in archived if "plan" not in g.tags]
+
         combined_tasks = all_tasks + plan_tasks
         return {
             "columns": columns,
@@ -167,6 +170,8 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "done": sum(1 for t in combined_tasks if t.done),
             "archived_tasks": archived_tasks,
             "archived_task_trees": archived_task_trees,
+            "archived_plan_groups": archived_plan,
+            "archived_spec_groups": archived_specs,
         }
 
     def _spec_context(name: str) -> dict | None:
