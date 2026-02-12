@@ -1,6 +1,6 @@
 ---
 title: Loop History View
-status: ready
+status: done
 priority: high
 tags: [tui, web, core, ux]
 ---

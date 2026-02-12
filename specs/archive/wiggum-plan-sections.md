@@ -1,6 +1,6 @@
 ---
 title: Wiggum Plan Section Parsing
-status: ready
+status: done
 priority: high
 tags: [core, tui, web, parser]
 ---

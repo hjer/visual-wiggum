@@ -1,6 +1,6 @@
 ---
 title: Global Progress Bar
-status: ready
+status: done
 priority: high
 tags: [tui, web, ux]
 ---

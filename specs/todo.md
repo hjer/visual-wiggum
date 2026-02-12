@@ -11,11 +11,12 @@ Tracking all in-flight specs and features for the spec-view project.
 
 ## Features
 
-- [X] Global progress bar in TUI and web UI (`specs/global-progress-bar.md`)
-- [X] Loop history view in TUI and web UI (`specs/loop-history.md`)
-- [X] Wiggum plan section parsing — split IMPLEMENTATION_PLAN.md into per-JTBD sections (`specs/wiggum-plan-sections.md`)
+(No active features)
 
 ## Completed
+- [X] Global progress bar in TUI and web UI (`specs/archive/global-progress-bar.md`)
+- [X] Loop history view in TUI and web UI (`specs/archive/loop-history.md`)
+- [X] Wiggum plan section parsing — split IMPLEMENTATION_PLAN.md into per-JTBD sections (`specs/archive/wiggum-plan-sections.md`)
 - [X] Track IMPLEMENTATION_PLAN.md in spec-view (`specs/track-implementation-plan.md`)
 - [X] Add archive function in tui and webui, tag with archive and hide under own many
 - [X] TUI detail pane scrolling with j/k/h vim navigation
