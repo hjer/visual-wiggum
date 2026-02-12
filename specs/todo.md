@@ -11,7 +11,7 @@ Tracking all in-flight specs and features for the spec-view project.
 
 ## Features
 
-(No active features)
+- [X] Archive completed plan sections — prompt/config update, no code needed
 
 ## Completed
 - [X] Global progress bar in TUI and web UI (`specs/archive/global-progress-bar.md`)

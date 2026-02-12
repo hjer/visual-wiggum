@@ -20,8 +20,6 @@
 
 **Status:** done | **Priority:** medium | **Tags:** tui, web, ux
 
-Archived specs (those in `specs/archive/` with the `"archive"` tag) are now grouped under a collapsible "Archive" section in both UIs, keeping active work prominent.
-
 ### Tasks
 
 - [x] TUI dashboard: partition groups into active/archived, render archive as collapsed tree node with expand/collapse
@@ -32,21 +30,11 @@ Archived specs (those in `specs/archive/` with the `"archive"` tag) are now grou
 - [x] Web tasks template: collapsible archive section with task list at bottom
 - [x] CSS: archive-section collapse styles with rotating arrow indicator
 
-### Files Modified
-- `src/spec_view/tui/dashboard.py` — tree partitioning, `_add_group_node()` helper, status bar
-- `src/spec_view/tui/task_board.py` — group partitioning, dimmed archive section
-- `src/spec_view/web/server.py` — `_partition_groups()`, updated contexts
-- `src/spec_view/web/templates/partials/dashboard_content.html` — archive section
-- `src/spec_view/web/templates/partials/tasks_content.html` — archive section
-- `src/spec_view/web/static/style.css` — `.archive-section`, `.archive-header`, `.archive-arrow`
-
 ---
 
 ## TUI Detail Pane Scrolling & Navigation — DONE
 
 **Status:** done | **Priority:** medium | **Tags:** tui, ux
-
-The spec detail pane now supports full scrolling and vim-style navigation.
 
 ### Tasks
 
@@ -56,17 +44,11 @@ The spec detail pane now supports full scrolling and vim-style navigation.
 - [x] Remove 2000-character content truncation (scrolling makes it unnecessary)
 - [x] Show navigation bindings (j/k/h) in footer when detail pane is focused
 
-### Files Modified
-- `src/spec_view/tui/spec_view.py` — `VerticalScroll` base, bindings, `action_focus_tree()`
-- `src/spec_view/tui/dashboard.py` — `detail.focus()` on selection, removed redundant CSS
-
 ---
 
 ## TUI Task Board: Group Tasks by Spec — DONE
 
 **Status:** done | **Priority:** medium | **Tags:** tui, ux
-
-Tasks on the task board are now grouped under their spec name as bold headings with task counts, instead of a flat mixed list.
 
 ### Tasks
 
@@ -74,16 +56,11 @@ Tasks on the task board are now grouped under their spec name as bold headings w
 - [x] Refactor `_build_content()` to iterate groups instead of merging all tasks into flat lists
 - [x] Archived groups render with dimmed headings
 
-### Files Modified
-- `src/spec_view/tui/task_board.py` — `_render_group_tasks()`, refactored `_build_content()`
-
 ---
 
 ## Watcher: Watch Include Pattern Files — DONE
 
 **Status:** done | **Priority:** high | **Tags:** core, bugfix
-
-The file watcher only watched `spec_paths` directories, so files matched by `config.include` (like `IMPLEMENTATION_PLAN.md` at the project root) didn't trigger live reloads.
 
 ### Tasks
 
@@ -91,94 +68,18 @@ The file watcher only watched `spec_paths` directories, so files matched by `con
 - [x] Refactor `watch_specs()` (TUI) and `start_watcher_thread()` (web) to use the shared helper
 - [x] Deduplicate paths to avoid watching the same directory twice
 
-### Files Modified
-- `src/spec_view/core/watcher.py` — `_collect_watch_paths()`, refactored both watcher functions
-
 ---
 
 ## Spec: Global Progress Bar (`specs/global-progress-bar.md`) — DONE
 
 **Status:** done | **Priority:** high | **Tags:** tui, web, ux
 
-### Gap Analysis
-
-The spec requires a persistent, always-visible progress bar at the bottom of both the TUI and web UI showing overall task completion.
-
-**TUI — Current state:**
-- `DashboardScreen` has a `#status-bar` (1-row `Static` widget docked to bottom) that shows plain text like `" 3 specs: 1 draft, 2 done | Tasks: 5/12 | 1 archived"`. It already excludes archived specs from active counts. No visual bar characters, no percentage.
-- `TaskBoardScreen` has a header line with total task counts and per-group headings with counts, but **no** persistent bottom status bar or visual progress indicator.
-- Neither screen uses Textual's `ProgressBar` or Rich bar characters (`━`/`─`).
-- `SpecDetailView` is a `VerticalScroll` with vim-style keybindings — the progress bar must not interfere with its scrolling.
-
-**Web — Current state:**
-- `dashboard_content.html` has a progress bar (`.summary-bar` with `.progress-container` + `.progress-bar`) at the top of the dashboard page. Shows filled bar + text like `"5/12 tasks complete (41%)"`. This already uses **active groups only** (archived are excluded).
-- This bar is **not** in `base.html` — it lives inside the dashboard partial, so it disappears on `/tasks` and `/spec/{name}`.
-- No `/partials/global-progress` endpoint exists.
-- SSE + htmx infrastructure is already in place (specchange events, partial refresh pattern).
-- `_partition_groups()` helper already exists in `server.py` — splits groups into active/archived.
-
-**Shared:**
-- Progress computation on **active groups only** is already done in `server.py:_dashboard_context()` and `dashboard.py:_status_summary()`, but it's not extracted into a shared/reusable spot.
-- The progress bar must count only active specs (not archived) to match existing behavior.
-
----
-
 ### Tasks
 
-#### 1. TUI: Create shared progress bar widget and add to DashboardScreen — DONE
-- [x] Create a reusable progress bar widget (or rendering function) in `src/spec_view/tui/` that both screens can use. Use Rich bar characters (`━` filled, `─` unfilled) in a `Static` widget — simpler than Textual's `ProgressBar` and fits the 1-row constraint.
-- [x] In `src/spec_view/tui/dashboard.py`, replace the plain-text `#status-bar` with this widget. Display: green-filled bar + percentage + fraction (`done/total`) + existing spec status counts (e.g. "3 draft, 2 done") + archived count.
-- [x] Keep it exactly 1 row tall, docked to bottom, above the Footer. Green fill on dark surface background.
-- [x] Compute progress on **active groups only** (exclude archived), matching existing `_status_summary()` behavior.
-- **Done when:** `DashboardScreen` shows a green-filled bar with percentage, fraction, and status counts in a single bottom row above Footer. The widget is importable by TaskBoardScreen.
-
-##### Files Created/Modified
-- `src/spec_view/tui/progress_bar.py` — new `ProgressBarWidget(Static)` with `_render()` and `update_groups()` methods, 20-char bar with `━`/`─` characters, green fill, percentage + fraction + spec counts + archive count
-- `src/spec_view/tui/dashboard.py` — replaced `Static` status bar with `ProgressBarWidget`, removed `_status_summary()` method, updated `_update_status_bar()` to call `update_groups()`
-
-#### 2. TUI: Add progress bar to TaskBoardScreen — DONE
-- [x] In `src/spec_view/tui/task_board.py`, add the shared progress bar widget (from task 1), docked to bottom, above Footer.
-- [x] Must live-update when `update_groups()` is called (same pattern as dashboard).
-- **Done when:** `TaskBoardScreen` has the same visual progress bar as DashboardScreen, and it updates live via the watcher.
-
-##### Files Modified
-- `src/spec_view/tui/task_board.py` — imported `ProgressBarWidget`, added CSS dock rule, yielded widget in `compose()` with `id="status-bar"`, updated `update_groups()` to refresh the progress bar
-
-#### 3. Web: Add global progress bar to `base.html` with partial endpoint and SSE wiring — DONE
-- [x] Add `GET /partials/global-progress` route in `src/spec_view/web/server.py` returning a progress bar HTML fragment. Use `_partition_groups()` to get active groups only, compute `sum(g.task_done) / sum(g.task_total)` as integer percentage. 0% with empty bar when zero tasks.
-- [x] Create a `partials/global_progress.html` template with the bar markup.
-- [x] Add a fixed-position progress bar div to `src/spec_view/web/templates/base.html`, pinned to the bottom of the viewport. Use `hx-get="/partials/global-progress"` `hx-trigger="load, specchange from:body"` `hx-swap="innerHTML"`.
-- [x] Style: `--bg` background, `--green` fill, subtle top border, ~32-36px tall. Add `padding-bottom` to `.container` in `style.css` to prevent content overlap.
-- **Done when:** A thin progress bar is visible at the bottom of every page (`/`, `/tasks`, `/spec/{name}`), updates live via SSE, and doesn't overlap content.
-
-##### Files Created/Modified
-- `src/spec_view/web/server.py` — added `GET /partials/global-progress` endpoint using `_partition_groups()` for active-only progress
-- `src/spec_view/web/templates/partials/global_progress.html` — new template with fill div + percentage/fraction text
-- `src/spec_view/web/templates/base.html` — added `global-progress-bar` div with htmx auto-fetch on load and SSE specchange
-- `src/spec_view/web/static/style.css` — added `.global-progress-bar`, `.global-progress-fill`, `.global-progress-text` styles; added `padding-bottom: 4rem` to `.container`
-
-#### 4. Tests: Add tests for progress bar computation — DONE
-- [x] Add tests verifying progress percentage: normal case, zero tasks (0%), all done (100%), single task.
-- [x] Verify archived specs are excluded from progress computation.
-- [x] Verify global progress bar div appears on all full pages (dashboard, tasks).
-- **Done when:** `.venv/bin/pytest` passes with new tests covering the progress computation.
-
-##### Files Created
-- `tests/test_web_progress.py` — 6 async tests using httpx ASGITransport against the FastAPI app: normal percentage, zero tasks, all done, single task, archived exclusion, base.html presence
-
-### Priority Order & Dependencies
-
-1. **Task 1** (TUI shared widget + dashboard) — foundational
-2. **Task 2** (TUI task board) — depends on task 1
-3. **Task 3** (Web global bar) — independent of TUI track, can be done in parallel with 1+2
-4. **Task 4** (Tests) — after implementation
-
-### Notes & Potential Issues
-
-- The dashboard's existing inline progress bar (`.summary-bar` in `dashboard_content.html`) is page-level, not global. The spec says to add a **global** bar to `base.html`. Keep both — the spec doesn't say to remove the dashboard's inline bar.
-- Textual's built-in `ProgressBar` widget has animation/ETA features we don't need. Rich bar characters (`━`/`─`) in a `Static` widget are simpler and fit the 1-row constraint better.
-- Using `hx-trigger="load, specchange from:body"` on the bar div is the cleanest approach — it fetches from the partial on page load AND on SSE events, keeping `base.html` self-contained without changing every route's context dict.
-- Progress must exclude archived specs — use `_partition_groups()` (web) or filter on `"archive" not in g.tags` (TUI).
+- [x] TUI: Create shared `ProgressBarWidget` in `progress_bar.py` with Rich bar chars, add to `DashboardScreen`
+- [x] TUI: Add `ProgressBarWidget` to `TaskBoardScreen`
+- [x] Web: Add `GET /partials/global-progress` endpoint, `global_progress.html` partial, fixed bar in `base.html` with SSE wiring
+- [x] Tests: 6 async tests for progress computation and presence in `test_web_progress.py`
 
 ---
 
@@ -186,88 +87,12 @@ The spec requires a persistent, always-visible progress bar at the bottom of bot
 
 **Status:** done | **Priority:** high | **Tags:** core, tui, web, ux
 
-### Gap Analysis
-
-The spec requires a dedicated history view in both TUI and web showing a timeline of git commits, with loop iteration detection, file changes, and tasks completed.
-
-**Current state:**
-- No `core/history.py` module exists.
-- No `CommitEntry` data model exists.
-- TUI has `d` (dashboard) and `t` (tasks) screens; no `l` (loops/history) screen.
-- Web has `/` (dashboard) and `/tasks` routes; no `/history` route.
-- No git-related functionality exists anywhere in the codebase.
-
-**What's needed:**
-1. Core module (`core/history.py`) — `CommitEntry` dataclass + `get_history()` function using `subprocess.run()` and `git log`/`git show`.
-2. TUI screen (`tui/history.py`) — Two-pane layout (commit list + detail), vim navigation, `l` keybinding, progress bar, watcher support.
-3. Web page + partials — `/history` route, `history.html` template, `/partials/history-content` partial, htmx/SSE wiring.
-4. Tests — Core parsing, edge cases (not a git repo, no commits, no IMPLEMENTATION_PLAN changes).
-
 ### Tasks
 
-#### 1. Core: Add `history.py` with `CommitEntry` model and git log parsing — DONE
-
-- [x] Create `src/spec_view/core/history.py` with `CommitEntry` dataclass matching the spec.
-- [x] Implement `get_history(root: Path, limit: int = 50) -> list[CommitEntry]` that parses `git log`.
-- [x] Use single `git log --format=<custom>` call with `--numstat` to avoid N+1.
-- [x] Extract `tasks_completed` by running `git show <hash> -- IMPLEMENTATION_PLAN.md` and parsing `+- [x]` lines from the diff.
-- [x] Detect `is_loop` from `Co-Authored-By:` + `Claude` in commit body (case-insensitive).
-- [x] Handle not-a-git-repo and no-commits gracefully (return empty list).
-- [x] Add tests in `tests/test_history.py` (14 tests covering all cases).
-- **Done when:** `get_history()` returns correct `CommitEntry` list from a test git repo, all tests pass.
-
-##### Files Created
-- `src/spec_view/core/history.py` — `CommitEntry` dataclass, `get_history()` function, internal helpers for git log parsing, numstat parsing, loop detection, and task extraction from IMPLEMENTATION_PLAN.md diffs
-- `tests/test_history.py` — 14 tests: not-a-repo, empty repo, single commit, loop detection (case-insensitive), manual commit, multiple commits order, limit parameter, file stats, task extraction, markdown stripping, no plan changes, multiple files, dataclass construction
-
-#### 2. TUI: Add Loop History screen with two-pane layout — DONE
-
-- [x] Create `src/spec_view/tui/history.py` with `HistoryScreen` — two-pane layout (commit list left, detail right).
-- [x] Add `l` keybinding to `app.py` for switching to history screen.
-- [x] Commit list: timestamp (relative), short hash, loop/manual badge, message, file count + stat summary, tasks completed.
-- [x] Detail pane: full commit message, changed files list, tasks completed.
-- [x] Vim-style navigation: `j`/`k` scroll list, `enter`/`l` to detail, `h` back to list.
-- [x] Include `ProgressBarWidget` at bottom.
-- [x] Support `update_groups()` for live refresh (re-read git history).
-- **Done when:** `l` keybinding opens history screen, commits display correctly with loop detection.
-
-##### Files Created/Modified
-- `src/spec_view/tui/history.py` — new `HistoryScreen` with `CommitListItem`, `CommitDetailView`, `_relative_time()` helper, two-pane `ListView`/`Static` layout, vim-style j/k navigation, `update_groups()` for live refresh
-- `src/spec_view/tui/app.py` — added `l` keybinding (`action_switch_history`), imported `HistoryScreen`
-
-#### 3. Web: Add history page with htmx live updates — DONE
-
-- [x] Add `GET /history` full-page route and `GET /partials/history-content` partial route.
-- [x] Create `templates/history.html` and `templates/partials/history_content.html`.
-- [x] Add "History" nav link to `base.html`.
-- [x] Each commit: timestamp, hash, loop/manual badge, message, file count + stat, tasks completed.
-- [x] Expandable detail: full body, changed files, tasks.
-- [x] Wire to SSE: `hx-trigger="load, specchange from:body"`.
-- [x] Style to match dark theme.
-- **Done when:** `/history` shows commits, updates live via SSE.
-
-##### Files Created/Modified
-- `src/spec_view/web/server.py` — added `get_history` import, `_timeago` Jinja2 filter, `_history_context()` helper, `GET /history` full-page route, `GET /partials/history-content` partial route
-- `src/spec_view/web/templates/history.html` — new page extending base.html
-- `src/spec_view/web/templates/partials/history_content.html` — new partial with timeline, commit entries (expandable), summary pills, htmx wiring
-- `src/spec_view/web/templates/base.html` — added "History" nav link
-- `src/spec_view/web/static/style.css` — added history timeline styles (`.history-entry`, `.loop-commit`, badges, expandable detail, file paths, task items)
-
-#### 4. Tests: Comprehensive test coverage — DONE
-
-- [x] Core tests: normal parsing, loop detection, task extraction, not-a-repo, no commits, empty plan changes (14 tests in `test_history.py`).
-- [x] Web tests: `/history` page, `/partials/history-content` partial, template rendering (8 tests in `test_web_history.py`).
-- **Done when:** All tests pass with `pytest`.
-
-##### Files Created
-- `tests/test_web_history.py` — 8 async tests: page rendering, partial with htmx attrs, loop/manual badges, tasks completed display, file stats, empty state, summary counts, nav link presence
-
-### Priority Order & Dependencies
-
-1. **Task 1** (Core) — foundational, both UIs depend on it
-2. **Task 2** (TUI) — depends on task 1
-3. **Task 3** (Web) — depends on task 1, independent of task 2
-4. **Task 4** (Tests) — incremental, added with each task
+- [x] Core: `history.py` with `CommitEntry` model, `get_history()` parsing git log + task extraction
+- [x] TUI: `HistoryScreen` with two-pane layout (commit list + detail), `l` keybinding
+- [x] Web: `/history` page + `/partials/history-content` partial + nav link + htmx/SSE
+- [x] Tests: 14 core tests in `test_history.py`, 8 web tests in `test_web_history.py`
 
 ---
 
@@ -275,112 +100,96 @@ The spec requires a dedicated history view in both TUI and web showing a timelin
 
 **Status:** done | **Priority:** high | **Tags:** core, tui, web, parser
 
+### Tasks
+
+- [x] Core: `PlanSection` model, `detect_format("wiggum")`, `parse_plan_sections()`, `_expand_wiggum_sections()`
+- [x] TUI: Dashboard and task board plan grouping under "Implementation Plan" parent node
+- [x] Tests: 50 tests in `test_wiggum.py` covering parsing, expansion, edge cases
+- [x] Web: `_partition_groups()` returns `(active, plan, archived)` triple
+- [x] Web: Dashboard plan section grouping with collapsible "Implementation Plan" section
+- [x] Web: Tasks page plan section grouping with per-section headings
+- [x] Web tests: 9 tests in `test_web_plan.py`
+
+---
+
+## Spec: Archive Completed Plan Sections (`specs/archive-done-plan-sections.md`)
+
+**Status:** ready | **Priority:** medium | **Tags:** core, tui, web, ux
+
 ### Gap Analysis
 
-The spec requires parsing `IMPLEMENTATION_PLAN.md` into separate sections per JTBD, each with its own status, tasks, and progress — instead of treating the entire file as one monolithic spec.
+The spec requires automatically archiving completed JTBD sections from `IMPLEMENTATION_PLAN.md` so they move from the "Implementation Plan" parent node to the "Archive" node in both UIs.
 
-**Current state (uncommitted changes in working tree):**
+**Current state:**
 
-Core parsing and scanner are **partially implemented** (uncommitted):
-- `PlanSection` dataclass exists in `models.py` with `title`, `status`, `priority`, `tags`, `tasks`, `task_tree`, `body`, `source_path` and computed properties (`task_total`, `task_done`, `task_percent`). ✅ Matches spec.
-- `detect_format()` in `parser.py` detects `"wiggum"` format via `h2_count >= 2 && status_count >= 2`. ✅ Matches spec.
-- `parse_plan_sections()` in `parser.py` splits body at `## ` boundaries, extracts status/priority/tags metadata, strips `— DONE` suffix and `Spec:` prefix from titles, skips structural sections (no status + no tasks). ✅ Matches spec.
-- `_expand_wiggum_sections()` in `scanner.py` converts `PlanSection` objects into virtual `SpecGroup` objects with `"plan"` and `"plan-done"` tags. ✅ Matches spec.
-- `scan_specs()` in `scanner.py` detects wiggum-format files and expands them into per-section groups, preserving file order. ✅ Matches spec.
+- **Scanner (`scanner.py:_expand_wiggum_sections()`)**: When all tasks in a plan section are done, the section gets `"plan-done"` tag — but NOT the `"archive"` tag. The section stays under "Implementation Plan" (just dimmed in TUI task board with a "Completed" separator).
+- **TUI dashboard (`dashboard.py:_populate_tree()`)**: Partitions on `"archive" in g.tags` for Archive and `"plan" in g.tags and "archive" not in g.tags` for Plan. Since done plan sections have `"plan"` but not `"archive"`, they stay under Plan. No code change needed — once scanner adds `"archive"`, they'll automatically move to Archive.
+- **TUI task board (`task_board.py:_build_content()`)**: Has separate `"plan-done"` handling: a "Completed" separator within the Plan section, with dimmed done groups. The spec says to **remove** this — done plan sections should flow into the Archive section at bottom instead.
+- **Web server (`server.py:_partition_groups()`)**: Partitions `(active, plan, archived)` where plan = `"plan" in g.tags and "archive" not in g.tags` and archived = `"archive" in g.tags`. Once scanner adds `"archive"`, done plan sections will correctly move from `plan` to `archived`. No code change needed.
+- **Web templates**: Dashboard and tasks templates have `"plan-done"` handling within the plan section (dimmed cards, "Completed" separator). Same as TUI — this should be removed since archived plan sections will move to the archive section.
+- **Progress bar**: TUI `progress_bar.py` counts all non-archived groups (active + plan). Web progress counts `active + plan`. Once done plan sections get `"archive"` tag, they'll be excluded from the progress count — which is the correct behavior per spec ("archived work shouldn't inflate the remaining work view").
 
-TUI is **partially implemented** (uncommitted):
-- `dashboard.py` partitions groups into active/plan/archived, renders plan groups under a collapsible "Implementation Plan" parent node with aggregate progress. ✅ Matches spec.
-- `task_board.py` partitions groups into active/plan/archived, renders plan sections under an "Implementation Plan" header with per-section headings and completed sections dimmed. ✅ Matches spec.
+**What needs to change:**
 
-**What's still missing:**
-1. **Web dashboard** — No plan section grouping. `_partition_groups()` only splits active/archived; plan groups are lumped with active. The dashboard needs a separate "Implementation Plan" collapsible section with per-section cards.
-2. **Web tasks page** — Same issue. Plan section tasks are not grouped under section headings. Needs per-section grouping matching the TUI task board.
-3. **Web `_partition_groups()`** — Needs to be updated to return a third list: `plan` groups (tagged `"plan"`), separate from active and archived.
-4. **Tests** — No tests for `parse_plan_sections()`, `detect_format("wiggum")`, `_expand_wiggum_sections()`, or `PlanSection` model. No web tests for plan section rendering.
-5. **Uncommitted code needs commit** — The 5 modified files need to be committed before continuing.
+1. **Scanner**: Add `"archive"` tag (alongside `"plan"`) to done plan sections. Remove `"plan-done"` tag — it's no longer needed.
+2. **TUI task board**: Remove the separate `"plan-done"` handling (the "Completed" separator within plan). Done plan sections will appear in the Archive section at bottom.
+3. **Web templates**: Remove `"plan-done"` handling from dashboard and tasks templates.
+4. **Tests**: Update existing tests that check for `"plan-done"` tag behavior.
+
+**What does NOT need to change:**
+
+- TUI dashboard — the existing `"archive" in g.tags` partitioning already handles this.
+- Web `_partition_groups()` — already partitions on `"archive" in g.tags`.
+- Web server routes — no code changes needed.
+- Progress bar — already excludes `"archive"` tagged groups.
 
 ### Tasks
 
-#### 1. Core + Scanner: Plan section parsing — DONE (uncommitted)
-- [x] Add `PlanSection` dataclass to `models.py` with computed properties
-- [x] Add `"wiggum"` format detection to `detect_format()` in `parser.py`
-- [x] Add `parse_plan_sections()` to `parser.py` — splits at `## ` boundaries, extracts metadata, skips structural sections
-- [x] Add `_expand_wiggum_sections()` to `scanner.py` — converts `PlanSection` → virtual `SpecGroup` with `"plan"` tag
-- [x] Update `scan_specs()` to detect wiggum-format files and expand them, preserving section order
-- **Done when:** `scan_specs()` returns per-section `SpecGroup` objects from a wiggum-format file.
+#### 1. Core: Add `"archive"` tag to done plan sections, remove `"plan-done"` tag
+- [ ] In `scanner.py:_expand_wiggum_sections()`, change the tag logic: when a plan section has all tasks done (`task_done == task_total` and `task_total > 0`) OR its status is `done`, add `"archive"` to the group's tags alongside `"plan"`. Remove the `"plan-done"` tag entirely — replace it with `"archive"`.
+- [ ] Handle the edge case: section with status `done` but no tasks (e.g., just notes with `**Status:** done`) should also get `"archive"`.
+- [ ] Verify that sections with partial completion (e.g., 9/10 tasks done, status not `done`) do NOT get `"archive"`.
+- **Done when:** `_expand_wiggum_sections()` adds `"archive"` (not `"plan-done"`) to completed plan sections. Both `"plan"` and `"archive"` tags are present on archived plan sections.
 
-#### 2. TUI: Dashboard and task board plan grouping — DONE (uncommitted)
-- [x] `dashboard.py`: Partition groups into active/plan/archived; render plan groups under collapsible "Implementation Plan" parent node with aggregate `(done/total)` label
-- [x] `task_board.py`: Partition groups into active/plan/archived; render plan sections under "Implementation Plan" header; dimmed "Completed" separator for done plan sections
-- **Done when:** TUI dashboard tree shows "Implementation Plan" parent node with per-section children; task board groups tasks by section.
+#### 2. TUI task board: Remove `"plan-done"` handling
+- [ ] In `task_board.py:_build_content()`, remove the separate `plan_completed` list and the "Completed" separator within the Plan section. Active plan sections remain under "Implementation Plan". Done plan sections (now tagged `"archive"`) will naturally appear in the Archive section at bottom (the existing `archived = [g for g in self.groups if "archive" in g.tags]` already captures them).
+- [ ] The Plan section header's aggregate count should only count non-archived plan groups: change `plan` filter to exclude `"archive"` tagged groups (i.e., `"plan" in g.tags and "archive" not in g.tags`).
+- **Done when:** TUI task board shows no "Completed" separator within Plan. Done plan sections appear in Archive at bottom.
 
-#### 3. Tests: Core parsing and scanner expansion — DONE
-- [x] Add tests for `detect_format()` returning `"wiggum"` on plan content
-- [x] Add tests for `parse_plan_sections()` — normal multi-section split, title cleaning (strip `Spec:` prefix, `— DONE` suffix, parenthetical refs), status extraction (from `**Status:**` line and heading suffix), priority/tags extraction, structural section skipping, tasks within sections
-- [x] Add tests for `_expand_wiggum_sections()` — produces correct number of `SpecGroup` objects, each with `"plan"` tag, `"plan-done"` tag when all tasks are done, correct slug names
-- [x] Add tests for `PlanSection` model computed properties (`task_total`, `task_done`, `task_percent`)
-- [x] Add tests for edge cases: single section, empty section, section with no tasks but has status line, nested `####` subsections (tasks belong to parent `## ` section)
-- **Done when:** `.venv/bin/pytest` passes with comprehensive tests for wiggum parsing.
+#### 3. Web templates: Remove `"plan-done"` handling
+- [ ] In `partials/dashboard_content.html`, remove the dimmed "done plan cards" section within the Implementation Plan group. Done plan sections will appear in the Archive section instead.
+- [ ] In `partials/tasks_content.html`, remove the "Completed" separator and dimmed done groups within the Implementation Plan section. Done plan tasks will appear in the Archive section.
+- **Done when:** Web dashboard and tasks pages show no done plan sections within the Implementation Plan group. They appear in Archive instead.
 
-##### Files Created
-- `tests/test_wiggum.py` — 50 tests across 8 test classes: `TestDetectFormatWiggum` (5 tests — wiggum detection, precedence over spec-kit/openspec), `TestCleanSectionTitle` (8 tests — DONE suffix variants, Spec: prefix, parenthetical refs, combined), `TestSlugify` (3 tests), `TestParsePlanSections` (17 tests — multi-section split, structural section skipping, status from heading/body, title cleaning, section-specific tasks, plan tag, priority defaults, single section, no-tasks-with-status, nested subsections, body/path preservation, task trees, empty/no-h2), `TestPlanSectionModel` (5 tests — computed properties), `TestExpandWiggumSections` (9 tests — group count, tags, plan-done tag, slugs, titles, task counts, status/priority, format type, empty), `TestScanSpecsWiggum` (3 tests — integration with scan_specs, ordering)
-
-#### 4. Web: Update `_partition_groups()` to separate plan groups — DONE
-- [x] Update `_partition_groups()` in `server.py` to return `(active, plan, archived)` triple instead of `(active, archived)` pair. Plan groups are those tagged `"plan"` and not `"archive"`.
-- [x] Update all callers of `_partition_groups()`: `_dashboard_context()`, `_tasks_context()`, `partial_global_progress()`.
-- [x] Global progress bar should include plan groups in the count (plan tasks are real work).
-- **Done when:** Server correctly partitions groups into three categories. Existing tests still pass.
-
-##### Files Modified
-- `src/spec_view/web/server.py` — `_partition_groups()` returns `(active, plan, archived)` triple; `_dashboard_context()` passes `plan_groups` and includes plan tasks in overall progress; `_tasks_context()` passes `plan_groups`, `plan_tasks`, `plan_task_trees` and includes plan tasks in total/done counts; `partial_global_progress()` includes plan groups in progress calculation
-
-#### 5. Web: Dashboard plan section grouping — DONE
-- [x] Update `_dashboard_context()` to pass `plan_groups` to the template.
-- [x] Update `partials/dashboard_content.html` to render plan groups under a collapsible "Implementation Plan" section header with aggregate progress, matching the TUI layout.
-- [x] Plan section cards show per-section title, status, priority, task progress.
-- [x] Done plan sections appear dimmed within the plan section (not in archive).
-- [x] Style to match existing card layout and archive section pattern.
-- **Done when:** Web dashboard shows "Implementation Plan" collapsible section with per-section cards.
-
-##### Files Modified
-- `src/spec_view/web/templates/partials/dashboard_content.html` — added collapsible "Implementation Plan" section with aggregate progress header, active plan cards, dimmed done plan cards (`plan-done-card` class)
-
-#### 6. Web: Tasks page plan section grouping — DONE
-- [x] Update `_tasks_context()` to pass `plan_groups` (and their tasks/trees) separately from active groups.
-- [x] Update `partials/tasks_content.html` to render plan tasks under section headings within an "Implementation Plan" group, matching TUI task board layout.
-- [x] Done plan sections dimmed at bottom of the plan group.
-- **Done when:** Web tasks page groups plan tasks by section heading under "Implementation Plan".
-
-##### Files Modified
-- `src/spec_view/web/templates/partials/tasks_content.html` — added collapsible "Implementation Plan" task section with per-section group headings (`plan-group-heading`), task counts, "Completed" separator for done sections, dimmed done groups
-
-#### 7. Web tests: Plan section rendering — DONE
-- [x] Add tests verifying plan groups appear on dashboard as separate cards under plan header.
-- [x] Add tests verifying plan tasks are grouped by section on the tasks page.
-- [x] Add tests verifying plan sections are excluded from the archive section.
-- [x] Add tests verifying global progress bar includes plan task counts.
-- **Done when:** `.venv/bin/pytest` passes with web tests for plan section rendering.
-
-##### Files Created
-- `tests/test_web_plan.py` — 9 async tests: dashboard plan section rendering, aggregate progress, done card dimming, plan not in archive, tasks page plan section, group headings, completed separator, global progress includes plan tasks, no plan file graceful fallback
+#### 4. Tests: Update for archive-based plan section archiving
+- [ ] Update `test_wiggum.py` tests that check for `"plan-done"` tag: change expectations to check for `"archive"` tag on completed plan sections.
+- [ ] Add test: plan section with all tasks done has both `"plan"` and `"archive"` tags.
+- [ ] Add test: plan section with status `done` but no tasks gets `"archive"` tag.
+- [ ] Add test: partially complete plan section does NOT get `"archive"` tag.
+- [ ] Update `test_web_plan.py` tests that reference `"plan-done"` card styling or completed separator — verify done plan sections appear in archive section instead.
+- [ ] Run full test suite to verify no regressions.
+- **Done when:** `.venv/bin/pytest` passes with updated tests. No references to `"plan-done"` remain in test expectations.
 
 ### Priority Order & Dependencies
 
-1. **Task 3** (Core/scanner tests) — validate existing uncommitted code before building on it
-2. **Task 4** (Web partition update) — foundational for web tasks 5-7
-3. **Task 5** (Web dashboard) — depends on task 4
-4. **Task 6** (Web tasks page) — depends on task 4
-5. **Task 7** (Web tests) — after implementation
+1. **Task 1** (Core scanner) — foundational; everything else depends on the tag change
+2. **Task 2** (TUI task board) — depends on task 1
+3. **Task 3** (Web templates) — depends on task 1, can run parallel with task 2
+4. **Task 4** (Tests) — after implementation, but should be done incrementally with each task
 
-Tasks 5 and 6 can be done in parallel once task 4 is complete.
+Tasks 2 and 3 can be done in parallel once task 1 is complete.
+
+### Notes
+
+- The `"plan-done"` tag is used in: `scanner.py` (assignment), `task_board.py` (filtering), `dashboard_content.html` (card styling), `tasks_content.html` (completed separator), and tests. All need updating.
+- After this change, a plan section's lifecycle is: `"plan"` → `"plan" + "archive"`. The `"plan"` tag is preserved so UIs can still identify it as originating from the implementation plan (useful for rendering context).
+- The progress bar behavior change is automatic: archived plan sections are excluded from active counts, which is the correct spec behavior.
 
 ---
 
 ## Housekeeping: Tech Debt & Code Quality
 
 **Status:** draft | **Priority:** medium | **Tags:** chore, quality
-
-Gap analysis (2026-02-12) found all specs fully implemented and archived. 176 tests pass. Three code quality issues discovered:
 
 ### Tasks
 
@@ -402,3 +211,4 @@ Gap analysis (2026-02-12) found all specs fully implemented and archived. 176 te
 - The scanner already auto-tags archived specs with `"archive"` in their tags, making partitioning straightforward via `"archive" in g.tags`.
 - The watcher must watch both `spec_paths` directories and parent directories of `include` pattern matches — otherwise root-level included files won't trigger live reloads.
 - Plan sections use the `"plan"` tag (auto-applied by scanner) for UI grouping. Done plan sections additionally get `"plan-done"`. These are distinct from `"archive"` — plan sections are not archived specs.
+- The existing UI partitioning logic (`"archive" in g.tags`) is designed so that adding `"archive"` to any group automatically moves it to the archive section — no UI code changes needed for dashboard or web server.
