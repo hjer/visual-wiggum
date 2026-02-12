@@ -124,3 +124,15 @@
 - [x] Web tasks template: Remove `active_plan_groups`/`done_plan_groups` split and "Completed" separator
 - [x] CSS: Remove `.plan-done-card { opacity: 0.5; }` rule
 - [x] Tests: Update `test_wiggum.py` assertions from `"plan-done"` to `"archive"`, update `test_web_plan.py` to verify done plan sections appear in archive section
+
+---
+
+## Housekeeping: Tech Debt & Code Quality — DONE
+
+**Status:** done | **Priority:** low | **Tags:** chore, quality, archive
+
+### Tasks
+
+- [x] Fix version mismatch: `pyproject.toml` says `0.3.2` but `src/spec_view/__init__.py` says `0.2.2`. Sync `__init__.py` to match `pyproject.toml` (source of truth for the build system).
+- [x] Fix deprecated `TemplateResponse` signature in `src/spec_view/web/server.py` (9 call sites). Change from `TemplateResponse(name, context)` to `TemplateResponse(request, name, context=context)` — eliminates deprecation warnings in tests.
+- [x] Remove unused `CommitEntry` import in `src/spec_view/web/server.py` (line 18). Only `get_history` is used. Also removed unused `Status` import.

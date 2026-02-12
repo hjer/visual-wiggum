@@ -15,8 +15,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ..core.config import Config
-from ..core.history import CommitEntry, get_history
-from ..core.models import SpecGroup, Status
+from ..core.history import get_history
+from ..core.models import SpecGroup
 from ..core.scanner import scan_specs
 from ..core.watcher import SpecChangeNotifier, start_watcher_thread
 
@@ -81,7 +81,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
         archived = [g for g in groups if "archive" in g.tags]
         return active, plan, archived
 
-    def _dashboard_context(request: Request) -> dict:
+    def _dashboard_context() -> dict:
         groups = _get_groups()
         active, plan, archived = _partition_groups(groups)
         all_counted = active + plan
@@ -95,7 +95,6 @@ def create_app(root: Path, config: Config) -> FastAPI:
             status_counts[s] = status_counts.get(s, 0) + 1
 
         return {
-            "request": request,
             "groups": active,
             "plan_groups": plan,
             "archived_groups": archived,
@@ -105,7 +104,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "status_counts": status_counts,
         }
 
-    def _tasks_context(request: Request) -> dict:
+    def _tasks_context() -> dict:
         groups = _get_groups()
         active, plan, archived = _partition_groups(groups)
 
@@ -157,7 +156,6 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
         combined_tasks = all_tasks + plan_tasks
         return {
-            "request": request,
             "columns": columns,
             "all_tasks": all_tasks,
             "all_task_trees": all_task_trees,
@@ -171,7 +169,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "archived_task_trees": archived_task_trees,
         }
 
-    def _spec_context(request: Request, name: str) -> dict | None:
+    def _spec_context(name: str) -> dict | None:
         groups = _get_groups()
         group = next((g for g in groups if g.name == name), None)
         if group is None:
@@ -182,7 +180,6 @@ def create_app(root: Path, config: Config) -> FastAPI:
             rendered[file_type] = _render_md(spec_file.body)
 
         return {
-            "request": request,
             "group": group,
             "rendered": rendered,
             "phases": group.all_phases,
@@ -190,12 +187,11 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "stories": group.stories,
         }
 
-    def _history_context(request: Request) -> dict:
+    def _history_context() -> dict:
         entries = get_history(root)
         loop_count = sum(1 for e in entries if e.is_loop)
         manual_count = sum(1 for e in entries if not e.is_loop)
         return {
-            "request": request,
             "entries": entries,
             "total": len(entries),
             "loop_count": loop_count,
@@ -206,49 +202,49 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def dashboard(request: Request) -> HTMLResponse:
-        return templates.TemplateResponse("dashboard.html", _dashboard_context(request))
+        return templates.TemplateResponse(request, "dashboard.html", context=_dashboard_context())
 
     @app.get("/spec/{name}", response_class=HTMLResponse)
     async def spec_detail(request: Request, name: str) -> HTMLResponse:
-        ctx = _spec_context(request, name)
+        ctx = _spec_context(name)
         if ctx is None:
             return HTMLResponse("<h1>Spec not found</h1>", status_code=404)
-        return templates.TemplateResponse("spec.html", ctx)
+        return templates.TemplateResponse(request, "spec.html", context=ctx)
 
     @app.get("/tasks", response_class=HTMLResponse)
     async def task_board(request: Request) -> HTMLResponse:
-        return templates.TemplateResponse("tasks.html", _tasks_context(request))
+        return templates.TemplateResponse(request, "tasks.html", context=_tasks_context())
 
     @app.get("/history", response_class=HTMLResponse)
     async def history(request: Request) -> HTMLResponse:
-        return templates.TemplateResponse("history.html", _history_context(request))
+        return templates.TemplateResponse(request, "history.html", context=_history_context())
 
     # --- Partial endpoints for htmx ---
 
     @app.get("/partials/dashboard-content", response_class=HTMLResponse)
     async def partial_dashboard(request: Request) -> HTMLResponse:
         return templates.TemplateResponse(
-            "partials/dashboard_content.html", _dashboard_context(request)
+            request, "partials/dashboard_content.html", context=_dashboard_context()
         )
 
     @app.get("/partials/tasks-content", response_class=HTMLResponse)
     async def partial_tasks(request: Request) -> HTMLResponse:
         return templates.TemplateResponse(
-            "partials/tasks_content.html", _tasks_context(request)
+            request, "partials/tasks_content.html", context=_tasks_context()
         )
 
     @app.get("/partials/history-content", response_class=HTMLResponse)
     async def partial_history(request: Request) -> HTMLResponse:
         return templates.TemplateResponse(
-            "partials/history_content.html", _history_context(request)
+            request, "partials/history_content.html", context=_history_context()
         )
 
     @app.get("/partials/spec-content/{name}", response_class=HTMLResponse)
     async def partial_spec(request: Request, name: str) -> HTMLResponse:
-        ctx = _spec_context(request, name)
+        ctx = _spec_context(name)
         if ctx is None:
             return HTMLResponse("", status_code=404)
-        return templates.TemplateResponse("partials/spec_content.html", ctx)
+        return templates.TemplateResponse(request, "partials/spec_content.html", context=ctx)
 
     @app.get("/partials/global-progress", response_class=HTMLResponse)
     async def partial_global_progress(request: Request) -> HTMLResponse:
@@ -259,8 +255,9 @@ def create_app(root: Path, config: Config) -> FastAPI:
         done = sum(g.task_done for g in all_counted)
         percent = int(done / total * 100) if total else 0
         return templates.TemplateResponse(
+            request,
             "partials/global_progress.html",
-            {"request": request, "done": done, "total": total, "percent": percent},
+            context={"done": done, "total": total, "percent": percent},
         )
 
     # --- SSE endpoint ---
