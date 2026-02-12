@@ -129,6 +129,25 @@ The web UI shows the same structure with collapsible phases, progress bars, and 
 
 Both dashboards watch for file changes. Check off a task in your editor — the dashboard updates within a second.
 
+## Running in a Dev Container
+
+For sandboxed development (especially useful with `claude --dangerously-skip-permissions`):
+
+```bash
+# Prerequisites
+colima start                          # or Docker Desktop
+npm install -g @devcontainers/cli
+
+# Launch Claude in a container
+./run-container.sh
+
+# Run the Wiggum loop in a container
+./run-container.sh ./loop.sh
+
+# Run any command
+./run-container.sh .venv/bin/pytest
+```
+
 ## Configuration
 
 Optional `.spec-view/config.yaml`:
