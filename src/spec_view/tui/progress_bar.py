@@ -12,8 +12,8 @@ class ProgressBarWidget(Static):
 
     DEFAULT_CSS = """
     ProgressBarWidget {
-        dock: bottom;
         height: 1;
+        width: 100%;
         background: $primary;
         color: $text;
         padding: 0 1;

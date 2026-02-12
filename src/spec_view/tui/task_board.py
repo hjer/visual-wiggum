@@ -17,18 +17,13 @@ class TaskBoardScreen(Screen):
 
     CSS = """
     TaskBoardScreen {
-        layout: grid;
-        grid-size: 1;
-        grid-rows: 1fr auto;
+        layout: vertical;
     }
 
     #task-content {
+        height: 1fr;
         padding: 1 2;
         overflow-y: auto;
-    }
-
-    ProgressBarWidget {
-        dock: bottom;
     }
     """
 

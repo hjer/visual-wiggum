@@ -114,33 +114,26 @@ class HistoryScreen(Screen):
 
     CSS = """
     HistoryScreen {
-        layout: grid;
-        grid-size: 1;
-        grid-rows: 1fr auto;
+        layout: vertical;
     }
 
     #history-area {
-        layout: grid;
-        grid-size: 2 1;
-        grid-columns: 1fr 2fr;
+        layout: horizontal;
+        height: 1fr;
     }
 
     #commit-list {
-        width: 100%;
+        width: 1fr;
         height: 100%;
         border-right: solid $primary;
         overflow-y: auto;
     }
 
     #commit-detail-scroll {
-        width: 100%;
+        width: 2fr;
         height: 100%;
         padding: 1 2;
         overflow-y: auto;
-    }
-
-    ProgressBarWidget {
-        dock: bottom;
     }
     """
 

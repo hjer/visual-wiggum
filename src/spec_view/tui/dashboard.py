@@ -41,31 +41,24 @@ class DashboardScreen(Screen):
 
     CSS = """
     DashboardScreen {
-        layout: grid;
-        grid-size: 1;
-        grid-rows: 1fr auto;
+        layout: vertical;
     }
 
     #main-area {
-        layout: grid;
-        grid-size: 2 1;
-        grid-columns: 1fr 2fr;
+        layout: horizontal;
+        height: 1fr;
     }
 
     #spec-tree {
-        width: 100%;
+        width: 1fr;
         height: 100%;
         border-right: solid $primary;
         padding: 0 1;
     }
 
     #detail-pane {
-        width: 100%;
+        width: 2fr;
         height: 100%;
-    }
-
-    ProgressBarWidget {
-        dock: bottom;
     }
     """
 
