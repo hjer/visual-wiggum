@@ -27,9 +27,12 @@ class SpecDetailView(VerticalScroll, can_focus=True):
     """
 
     BINDINGS = [
-        Binding("j", "scroll_down", "Scroll Down", show=True),
-        Binding("k", "scroll_up", "Scroll Up", show=True),
-        Binding("h", "focus_tree", "Back", show=True),
+        Binding("down", "scroll_down", "j/↓ Scroll", show=True),
+        Binding("j", "scroll_down", "Scroll Down", show=False),
+        Binding("up", "scroll_up", "k/↑ Scroll", show=True),
+        Binding("k", "scroll_up", "Scroll Up", show=False),
+        Binding("left", "focus_tree", "h/← Back", show=True),
+        Binding("h", "focus_tree", "Back", show=False),
     ]
 
     def action_focus_tree(self) -> None:

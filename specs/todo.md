@@ -19,3 +19,5 @@ Tracking all in-flight specs and features for the spec-view project.
 - [X] TUI detail pane scrolling with j/k/h vim navigation
 - [X] TUI task board: group tasks under spec headings
 - [X] Watcher: watch include pattern files for live reload
+- [X] TUI keyboard navigation: arrow keys + vim keys, focus stays on tree until leaf selected
+- [X] Remove manual refresh keybinding (file watcher handles it)

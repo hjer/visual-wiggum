@@ -30,6 +30,8 @@ class SpecTree(Tree[SpecGroup]):
     BINDINGS = [
         Binding("j", "cursor_down", "Down", show=False),
         Binding("k", "cursor_up", "Up", show=False),
+        Binding("enter", "select_cursor", "l/Enter Select", show=True),
+        Binding("l", "select_cursor", "Select", show=False),
     ]
 
 
@@ -141,6 +143,10 @@ class DashboardScreen(Screen):
     def on_tree_node_selected(self, event: Tree.NodeSelected[SpecGroup]) -> None:
         if event.node.data is None:
             return
+        # Top-level group nodes: just expand/collapse, stay in tree
+        if event.node.children:
+            return
+        # Leaf nodes (phases/files): show detail and focus it
         group = event.node.data
         self._selected_group_name = group.name
         detail = self.query_one("#detail-pane", SpecDetailView)

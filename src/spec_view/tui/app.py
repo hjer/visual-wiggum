@@ -29,7 +29,6 @@ class SpecViewApp(App):
         Binding("q", "quit", "Quit"),
         Binding("d", "switch_dashboard", "Dashboard", show=True),
         Binding("t", "switch_tasks", "Tasks", show=True),
-        Binding("r", "refresh", "Refresh", show=True),
     ]
 
     def __init__(
