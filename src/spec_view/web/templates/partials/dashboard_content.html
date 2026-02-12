@@ -68,9 +68,7 @@
         <span class="plan-arrow">&#x25b8;</span> Implementation Plan ({{ plan_done }}/{{ plan_total }})
     </div>
     <div class="spec-grid">
-        {% set active_plan = plan_groups | selectattr('task_percent', 'lt', 100) | list %}
-        {% set done_plan = plan_groups | selectattr('task_percent', 'eq', 100) | list %}
-        {% for group in active_plan %}
+        {% for group in plan_groups %}
         <a href="/spec/{{ group.name }}" class="spec-card">
             <div class="card-header">
                 <h3>{{ group.title }}</h3>
@@ -92,27 +90,6 @@
             {% endif %}
         </a>
         {% endfor %}
-        {% if done_plan %}
-        {% for group in done_plan %}
-        <a href="/spec/{{ group.name }}" class="spec-card plan-done-card">
-            <div class="card-header">
-                <h3>{{ group.title }}</h3>
-                <span class="badge badge-done">done</span>
-            </div>
-            <div class="card-meta">
-                <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
-            </div>
-            {% if group.task_total > 0 %}
-            <div class="card-progress">
-                <div class="progress-container small">
-                    <div class="progress-bar" style="width: 100%"></div>
-                </div>
-                <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
-            </div>
-            {% endif %}
-        </a>
-        {% endfor %}
-        {% endif %}
     </div>
 </div>
 {% endif %}

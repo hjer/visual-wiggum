@@ -98,15 +98,6 @@
         <span class="plan-arrow">&#x25b8;</span> Implementation Plan ({{ plan_done_tasks }}/{{ plan_total_tasks }} tasks)
     </div>
     <div class="task-list">
-        {% set active_plan_groups = [] %}
-        {% set done_plan_groups = [] %}
-        {% for group in plan_groups %}
-            {% if "plan-done" in group.tags %}
-                {% if done_plan_groups.append(group) %}{% endif %}
-            {% else %}
-                {% if active_plan_groups.append(group) %}{% endif %}
-            {% endif %}
-        {% endfor %}
         {% macro render_plan_tasks(tasks, depth) %}
         {% for task in tasks %}
         <div class="task-item {% if task.done %}done{% endif %} depth-{{ depth }}">
@@ -121,23 +112,13 @@
         {% endif %}
         {% endfor %}
         {% endmacro %}
-        {% for group in active_plan_groups %}
+        {% for group in plan_groups %}
         <div class="plan-group-heading">
             <span class="plan-group-title">{{ group.title }}</span>
             <span class="plan-group-count">{{ group.task_done }}/{{ group.task_total }}</span>
         </div>
         {{ render_plan_tasks(group.all_task_trees, 0) }}
         {% endfor %}
-        {% if done_plan_groups %}
-        <div class="plan-completed-separator">Completed</div>
-        {% for group in done_plan_groups %}
-        <div class="plan-group-heading plan-group-done">
-            <span class="plan-group-title">{{ group.title }}</span>
-            <span class="plan-group-count">{{ group.task_done }}/{{ group.task_total }}</span>
-        </div>
-        {{ render_plan_tasks(group.all_task_trees, 0) }}
-        {% endfor %}
-        {% endif %}
     </div>
 </div>
 {% endif %}

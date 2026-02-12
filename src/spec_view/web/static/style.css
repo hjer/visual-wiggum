@@ -736,10 +736,6 @@ h2 {
     margin-right: 0.25rem;
 }
 
-.plan-done-card {
-    opacity: 0.5;
-}
-
 .plan-group-heading {
     display: flex;
     align-items: center;

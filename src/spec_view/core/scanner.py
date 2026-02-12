@@ -62,8 +62,8 @@ def _expand_wiggum_sections(
         slug = _slugify(section.title)
         tags = list(section.tags)  # already includes "plan"
         if section.task_total > 0 and section.task_done == section.task_total:
-            if "plan-done" not in tags:
-                tags.append("plan-done")
+            if "archive" not in tags:
+                tags.append("archive")
 
         virtual_file = SpecFile(
             path=path,

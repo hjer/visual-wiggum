@@ -463,13 +463,14 @@ Just notes, no status, no tasks.
         for g in groups:
             assert "plan" in g.tags
 
-    def test_done_section_gets_plan_done_tag(self, tmp_path):
+    def test_done_section_gets_archive_tag(self, tmp_path):
         spec_file, path = self._make_spec_file(tmp_path)
         groups = _expand_wiggum_sections(spec_file, path)
         alpha = groups[0]
-        assert "plan-done" in alpha.tags
+        assert "archive" in alpha.tags
+        assert "plan" in alpha.tags
         beta = groups[1]
-        assert "plan-done" not in beta.tags
+        assert "archive" not in beta.tags
 
     def test_slug_names(self, tmp_path):
         spec_file, path = self._make_spec_file(tmp_path)

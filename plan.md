@@ -1,28 +1,40 @@
 # Gap Analysis — 2026-02-12
 
-## Result: All Specs Fully Implemented
+## Summary
 
-All 4 specs are **done**, archived, and passing (176/176 tests):
+Compared all specs against the full codebase (10 source modules, 10+ templates, 176+ tests).
 
-| Spec | Status | Tests |
-|------|--------|-------|
-| Track IMPLEMENTATION_PLAN.md | Done, archived | Covered by scanner/parser tests |
-| Global Progress Bar | Done, archived | `test_web_progress.py` (6 tests) |
-| Loop History View | Done, archived | `test_history.py` (14) + `test_web_history.py` (8) |
-| Wiggum Plan Sections | Done, archived | `test_wiggum.py` (50) + `test_web_plan.py` (9) |
+All 4 archived specs are fully implemented. One remaining item: cleanup of `"plan-done"` dead code.
 
-`specs/todo.md` shows no active features.
+## Completed Specs (no gaps)
 
-## Tech Debt Found (3 items)
+| Spec | Status |
+|------|--------|
+| Track IMPLEMENTATION_PLAN.md | Done, archived |
+| Global Progress Bar | Done, archived |
+| Loop History View | Done, archived |
+| Wiggum Plan Sections | Done, archived |
 
-Added to `IMPLEMENTATION_PLAN.md` as a new "Housekeeping" section:
+## Changes Made to IMPLEMENTATION_PLAN.md
 
-1. **Version mismatch** — `pyproject.toml` = `0.3.2`, `__init__.py` = `0.2.2`. One-line fix.
-2. **Deprecated TemplateResponse API** — 9 call sites in `server.py` use old Starlette signature, causing 26 deprecation warnings in tests. Straightforward migration.
-3. **Unused import** — `CommitEntry` imported but never used in `server.py`.
+1. **Archived 8 completed JTBD sections** to new `IMPLEMENTATION_PLAN_ARCHIVE.md` per AGENTS.md plan archive convention (added `archive` to Tags)
 
-All three are small, single-iteration tasks. No blockers or dependencies between them.
+2. **Reframed remaining feature work** — "Archive completed plan sections" from `specs/todo.md` is marked done (convention-based approach via AGENTS.md). But the old `"plan-done"` tag code is dead code in 7 locations that should be cleaned up:
+   - `scanner.py` — assigns `"plan-done"` tag
+   - `task_board.py` — splits plan into active/completed with separator
+   - `dashboard_content.html` — dimmed done-plan cards
+   - `tasks_content.html` — plan-done group splitting and separator
+   - `style.css` — `.plan-done-card` rule
+   - `test_wiggum.py` — asserts `"plan-done"` tag
+   - `test_web_plan.py` — tests `plan-done-card` class
 
-## No New Specs
+3. **Kept housekeeping tasks** (version mismatch, deprecated TemplateResponse, unused import)
 
-There are no unimplemented specs or pending feature work. The project is in a clean, shipping state aside from the minor tech debt above.
+## Remaining Work
+
+| Task | Priority | Size |
+|------|----------|------|
+| Remove `"plan-done"` dead code, replace with `"archive"` tag in scanner | Medium | 1 iteration |
+| Housekeeping: version sync, TemplateResponse fix, unused import | Low | 1 iteration |
+
+Both are independent. Each fits in a single build iteration.

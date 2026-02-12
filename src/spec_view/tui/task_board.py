@@ -80,14 +80,8 @@ class TaskBoardScreen(Screen):
             lines.append(
                 f"[bold]Implementation Plan[/bold]  ({plan_done}/{plan_total} complete)"
             )
-            plan_active = [g for g in plan if "plan-done" not in g.tags]
-            plan_completed = [g for g in plan if "plan-done" in g.tags]
-            for group in plan_active:
+            for group in plan:
                 lines.extend(self._render_group_tasks(group))
-            if plan_completed:
-                lines.append(f"  [dim]--- Completed ---[/dim]")
-                for group in plan_completed:
-                    lines.extend(self._render_group_tasks(group, dim=True))
 
         if not all_flat:
             lines.append("[dim]No tasks found in any specs.[/dim]")

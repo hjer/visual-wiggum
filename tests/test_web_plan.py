@@ -66,7 +66,7 @@ def _setup(tmp_path):
 
 @pytest.mark.asyncio
 async def test_dashboard_shows_plan_section(_setup):
-    """Dashboard renders an 'Implementation Plan' collapsible section with plan groups."""
+    """Dashboard renders an 'Implementation Plan' collapsible section with active plan groups."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
@@ -77,52 +77,53 @@ async def test_dashboard_shows_plan_section(_setup):
     assert "Implementation Plan" in html
     assert "plan-section" in html
     assert "Feature Alpha" in html
-    assert "Feature Beta" in html
 
 
 @pytest.mark.asyncio
 async def test_dashboard_plan_section_aggregate_progress(_setup):
-    """Plan section header shows aggregate task progress."""
+    """Plan section header shows aggregate task progress (active plan only)."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/partials/dashboard-content")
     html = resp.text
-    # 3 done out of 5 total (1 from Alpha + 2 from Beta)
-    assert "3/5" in html
+    # Only active plan groups (Feature Alpha: 1/3 done). Beta is archived.
+    assert "1/3" in html
 
 
 @pytest.mark.asyncio
-async def test_dashboard_plan_done_cards_dimmed(_setup):
-    """Done plan sections get the plan-done-card class for dimming."""
+async def test_dashboard_done_plan_sections_in_archive(_setup):
+    """Done plan sections appear in the archive section, not the plan section."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/partials/dashboard-content")
     html = resp.text
-    assert "plan-done-card" in html
+    assert "archive-section" in html
+    assert "Feature Beta" in html
 
 
 @pytest.mark.asyncio
-async def test_dashboard_plan_groups_not_in_archive(_setup):
-    """Plan groups appear in the plan section, not the archive section."""
+async def test_dashboard_active_plan_in_plan_section_done_in_archive(_setup):
+    """Active plan groups appear in plan section; done plan groups in archive."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/partials/dashboard-content")
     html = resp.text
-    # Archive section should not exist since there are no archived specs
-    assert "archive-section" not in html
-    # But plan section should exist
+    # Plan section should exist with active plan groups
     assert "plan-section" in html
+    assert "Feature Alpha" in html
+    # Archive section should exist with done plan groups
+    assert "archive-section" in html
 
 
 @pytest.mark.asyncio
 async def test_tasks_page_shows_plan_section(_setup):
-    """Tasks page renders plan tasks grouped by section."""
+    """Tasks page renders active plan tasks grouped by section."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
@@ -133,7 +134,6 @@ async def test_tasks_page_shows_plan_section(_setup):
     assert "Implementation Plan" in html
     assert "plan-section" in html
     assert "Feature Alpha" in html
-    assert "Feature Beta" in html
 
 
 @pytest.mark.asyncio
@@ -151,31 +151,34 @@ async def test_tasks_page_plan_group_headings(_setup):
 
 
 @pytest.mark.asyncio
-async def test_tasks_page_plan_completed_separator(_setup):
-    """Done plan sections appear after a 'Completed' separator."""
+async def test_tasks_page_done_plan_in_archive(_setup):
+    """Done plan sections appear in the archive section, not in the plan section."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/partials/tasks-content")
     html = resp.text
-    assert "plan-completed-separator" in html
-    assert "Completed" in html
-    assert "plan-group-done" in html
+    # No completed separator in plan section
+    assert "plan-completed-separator" not in html
+    assert "plan-group-done" not in html
+    # Archive section exists with done plan tasks
+    assert "archive-section" in html
 
 
 @pytest.mark.asyncio
 async def test_global_progress_includes_plan_tasks(_setup):
-    """Global progress bar includes plan task counts alongside active specs."""
+    """Global progress bar includes active plan task counts alongside active specs."""
     tmp_path = _setup
     app = create_app(tmp_path, _make_config(tmp_path))
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/partials/global-progress")
     html = resp.text
-    # Active spec: 0/1 tasks. Plan: 3/5 tasks. Total: 3/6 = 50%
-    assert "3/6" in html
-    assert "50%" in html
+    # Active spec: 0/1 tasks. Active plan (Alpha): 1/3 tasks. Total: 1/4 = 25%
+    # (Beta is archived, excluded from progress)
+    assert "1/4" in html
+    assert "25%" in html
 
 
 @pytest.mark.asyncio
