@@ -23,15 +23,15 @@ class ProgressBarWidget(Static):
     def __init__(self, groups: list[SpecGroup], **kwargs) -> None:
         super().__init__(**kwargs)
         self.groups = groups
-        self.update(self._render(groups))
+        self.update(self._render_bar(groups))
 
     def update_groups(self, groups: list[SpecGroup]) -> None:
         """Update the progress bar with new groups."""
         self.groups = groups
-        self.update(self._render(groups))
+        self.update(self._render_bar(groups))
 
     @staticmethod
-    def _render(groups: list[SpecGroup]) -> str:
+    def _render_bar(groups: list[SpecGroup]) -> str:
         """Render the progress bar content as a Rich-formatted string."""
         active = [g for g in groups if "archive" not in g.tags]
         archived = [g for g in groups if "archive" in g.tags]
