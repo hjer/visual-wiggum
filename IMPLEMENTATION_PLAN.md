@@ -271,9 +271,9 @@ The spec requires a dedicated history view in both TUI and web showing a timelin
 
 ---
 
-## Spec: Wiggum Plan Section Parsing (`specs/wiggum-plan-sections.md`)
+## Spec: Wiggum Plan Section Parsing (`specs/wiggum-plan-sections.md`) — DONE
 
-**Status:** in-progress | **Priority:** high | **Tags:** core, tui, web, parser
+**Status:** done | **Priority:** high | **Tags:** core, tui, web, parser
 
 ### Gap Analysis
 
@@ -334,26 +334,35 @@ TUI is **partially implemented** (uncommitted):
 ##### Files Modified
 - `src/spec_view/web/server.py` — `_partition_groups()` returns `(active, plan, archived)` triple; `_dashboard_context()` passes `plan_groups` and includes plan tasks in overall progress; `_tasks_context()` passes `plan_groups`, `plan_tasks`, `plan_task_trees` and includes plan tasks in total/done counts; `partial_global_progress()` includes plan groups in progress calculation
 
-#### 5. Web: Dashboard plan section grouping
-- [ ] Update `_dashboard_context()` to pass `plan_groups` to the template.
-- [ ] Update `partials/dashboard_content.html` to render plan groups under a collapsible "Implementation Plan" section header with aggregate progress, matching the TUI layout.
-- [ ] Plan section cards show per-section title, status, priority, task progress.
-- [ ] Done plan sections appear dimmed within the plan section (not in archive).
-- [ ] Style to match existing card layout and archive section pattern.
+#### 5. Web: Dashboard plan section grouping — DONE
+- [x] Update `_dashboard_context()` to pass `plan_groups` to the template.
+- [x] Update `partials/dashboard_content.html` to render plan groups under a collapsible "Implementation Plan" section header with aggregate progress, matching the TUI layout.
+- [x] Plan section cards show per-section title, status, priority, task progress.
+- [x] Done plan sections appear dimmed within the plan section (not in archive).
+- [x] Style to match existing card layout and archive section pattern.
 - **Done when:** Web dashboard shows "Implementation Plan" collapsible section with per-section cards.
 
-#### 6. Web: Tasks page plan section grouping
-- [ ] Update `_tasks_context()` to pass `plan_groups` (and their tasks/trees) separately from active groups.
-- [ ] Update `partials/tasks_content.html` to render plan tasks under section headings within an "Implementation Plan" group, matching TUI task board layout.
-- [ ] Done plan sections dimmed at bottom of the plan group.
+##### Files Modified
+- `src/spec_view/web/templates/partials/dashboard_content.html` — added collapsible "Implementation Plan" section with aggregate progress header, active plan cards, dimmed done plan cards (`plan-done-card` class)
+
+#### 6. Web: Tasks page plan section grouping — DONE
+- [x] Update `_tasks_context()` to pass `plan_groups` (and their tasks/trees) separately from active groups.
+- [x] Update `partials/tasks_content.html` to render plan tasks under section headings within an "Implementation Plan" group, matching TUI task board layout.
+- [x] Done plan sections dimmed at bottom of the plan group.
 - **Done when:** Web tasks page groups plan tasks by section heading under "Implementation Plan".
 
-#### 7. Web tests: Plan section rendering
-- [ ] Add tests verifying plan groups appear on dashboard as separate cards under plan header.
-- [ ] Add tests verifying plan tasks are grouped by section on the tasks page.
-- [ ] Add tests verifying plan sections are excluded from the archive section.
-- [ ] Add tests verifying global progress bar includes plan task counts.
+##### Files Modified
+- `src/spec_view/web/templates/partials/tasks_content.html` — added collapsible "Implementation Plan" task section with per-section group headings (`plan-group-heading`), task counts, "Completed" separator for done sections, dimmed done groups
+
+#### 7. Web tests: Plan section rendering — DONE
+- [x] Add tests verifying plan groups appear on dashboard as separate cards under plan header.
+- [x] Add tests verifying plan tasks are grouped by section on the tasks page.
+- [x] Add tests verifying plan sections are excluded from the archive section.
+- [x] Add tests verifying global progress bar includes plan task counts.
 - **Done when:** `.venv/bin/pytest` passes with web tests for plan section rendering.
+
+##### Files Created
+- `tests/test_web_plan.py` — 9 async tests: dashboard plan section rendering, aggregate progress, done card dimming, plan not in archive, tasks page plan section, group headings, completed separator, global progress includes plan tasks, no plan file graceful fallback
 
 ### Priority Order & Dependencies
 
@@ -369,8 +378,7 @@ Tasks 5 and 6 can be done in parallel once task 4 is complete.
 
 ## Discovered Issues
 
-- The uncommitted working tree has 5 files changed implementing core + TUI portions of wiggum plan section parsing. These changes need to be committed (with tests) before continuing with the web side.
-- `_partition_groups()` in `server.py` currently only returns `(active, archived)` — plan groups are mixed into `active`. This means the web dashboard and tasks page lump plan sections with regular specs, unlike the TUI which separates them.
+(No outstanding issues.)
 
 ## Learnings
 

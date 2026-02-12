@@ -66,7 +66,7 @@ Built on **Textual**. Main app (`app.py`) runs a background watcher thread and u
 ### Web (`web/`)
 **FastAPI** with **Jinja2** templates and **htmx** for partial updates. Full-page routes (`/`, `/spec/{name}`, `/tasks`) plus `/partials/*` endpoints for htmx fragments. `/events` SSE endpoint with debounced notifications for live reload.
 
-- Groups are partitioned into active/archived via `_partition_groups()` helper.
+- Groups are partitioned into active/plan/archived via `_partition_groups()` helper (returns triple).
 - Dashboard and tasks pages have collapsible archive sections (collapsed by default, click to expand).
 
 ### CLI (`cli.py`)
@@ -78,7 +78,8 @@ Built on **Textual**. Main app (`app.py`) runs a background watcher thread and u
 - Task trees are built by indentation depth; `Task.children` forms the recursive structure
 - `SpecGroup` aggregates a directory's spec/design/tasks files and exposes unified task counts
 - Archive detection: scanner auto-tags specs in `archive/` directories; UIs partition on `"archive" in g.tags`
-- Format detection (`detect_format()`) uses heuristics: phase headers for spec-kit, path patterns for kiro, numbered sections for openspec
+- Format detection (`detect_format()`) uses heuristics: phase headers for spec-kit, path patterns for kiro, numbered sections for openspec, multiple `## ` sections with `**Status:**` for wiggum
+- Wiggum plan sections: `IMPLEMENTATION_PLAN.md` is split into per-JTBD `SpecGroup` objects tagged `"plan"` (and `"plan-done"` when all tasks complete). UIs group these under a collapsible "Implementation Plan" section, separate from active specs and archive.
 - Config is stored in `.spec-view/config.yaml`, created on demand
 
 ## Spec Archive Rules
@@ -102,4 +103,4 @@ After completing any fix, feature, or loop iteration:
 
 ## Testing
 
-95 tests across 5 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, scanner glob patterns, and web endpoint behavior.
+176 tests across 9 modules in `tests/`. Uses `tmp_path` fixtures extensively for filesystem tests. Test coverage focuses on parsing edge cases, model aggregation, detection heuristics, scanner glob patterns, web endpoint behavior, plan section rendering, progress bar, and history views.

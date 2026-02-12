@@ -60,6 +60,63 @@
     {% endfor %}
 </div>
 
+{% if plan_groups %}
+{% set plan_total = plan_groups | sum(attribute='task_total') %}
+{% set plan_done = plan_groups | sum(attribute='task_done') %}
+<div class="plan-section collapsed">
+    <div class="plan-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <span class="plan-arrow">&#x25b8;</span> Implementation Plan ({{ plan_done }}/{{ plan_total }})
+    </div>
+    <div class="spec-grid">
+        {% set active_plan = plan_groups | selectattr('task_percent', 'lt', 100) | list %}
+        {% set done_plan = plan_groups | selectattr('task_percent', 'eq', 100) | list %}
+        {% for group in active_plan %}
+        <a href="/spec/{{ group.name }}" class="spec-card">
+            <div class="card-header">
+                <h3>{{ group.title }}</h3>
+                <span class="badge badge-{{ group.status.value }}">{{ group.status.value }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+                {% if group.tags %}
+                <span class="tags">{{ group.tags | join(', ') }}</span>
+                {% endif %}
+            </div>
+            {% if group.task_total > 0 %}
+            <div class="card-progress">
+                <div class="progress-container small">
+                    <div class="progress-bar" style="width: {{ group.task_percent }}%"></div>
+                </div>
+                <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
+            </div>
+            {% endif %}
+        </a>
+        {% endfor %}
+        {% if done_plan %}
+        {% for group in done_plan %}
+        <a href="/spec/{{ group.name }}" class="spec-card plan-done-card">
+            <div class="card-header">
+                <h3>{{ group.title }}</h3>
+                <span class="badge badge-done">done</span>
+            </div>
+            <div class="card-meta">
+                <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+            </div>
+            {% if group.task_total > 0 %}
+            <div class="card-progress">
+                <div class="progress-container small">
+                    <div class="progress-bar" style="width: 100%"></div>
+                </div>
+                <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
+            </div>
+            {% endif %}
+        </a>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 {% if archived_groups %}
 <div class="archive-section collapsed">
     <div class="archive-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -97,7 +154,7 @@
 </div>
 {% endif %}
 
-{% if not groups and not archived_groups %}
+{% if not groups and not plan_groups and not archived_groups %}
 <p class="empty-state">No specs found. Run <code>spec-view init</code> to get started.</p>
 {% endif %}
 </div>

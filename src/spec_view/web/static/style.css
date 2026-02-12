@@ -695,6 +695,83 @@ h2 {
     margin-right: 0.25rem;
 }
 
+/* Plan section */
+.plan-section {
+    margin-top: 2rem;
+}
+
+.plan-section.collapsed .spec-grid,
+.plan-section.collapsed .task-list {
+    display: none;
+}
+
+.plan-section.collapsed .plan-arrow {
+    display: inline-block;
+}
+
+.plan-section:not(.collapsed) .plan-arrow {
+    display: inline-block;
+    transform: rotate(90deg);
+}
+
+.plan-header {
+    cursor: pointer;
+    user-select: none;
+    padding: 0.75rem 1rem;
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+}
+
+.plan-header:hover {
+    color: var(--text);
+    background: var(--surface);
+}
+
+.plan-arrow {
+    display: inline-block;
+    transition: transform 0.15s ease;
+    font-size: 0.75rem;
+    margin-right: 0.25rem;
+}
+
+.plan-done-card {
+    opacity: 0.5;
+}
+
+.plan-group-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--surface-hover);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.plan-group-heading.plan-group-done {
+    opacity: 0.5;
+}
+
+.plan-group-count {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.plan-completed-separator {
+    padding: 0.5rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+
 /* Global progress bar */
 .global-progress-bar {
     position: fixed;
