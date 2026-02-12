@@ -1,6 +1,6 @@
 ---
 title: Preserve Group Headings in Archive
-status: ready
+status: done
 priority: medium
 tags: [tui, web, ux]
 ---

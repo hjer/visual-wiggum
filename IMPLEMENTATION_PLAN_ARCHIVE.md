@@ -4,6 +4,24 @@
 
 ---
 
+## Preserve Group Headings in Archive Sections (`specs/archive/archive-group-headings.md`) — DONE
+
+**Status:** done | **Priority:** medium | **Tags:** tui, web, ux, archive
+
+When archived plan sections move into the Archive node, they lose their "Implementation Plan" grouping and appear flat alongside archived spec files. The fix is purely UI — partition archived groups by source tag and render sub-headings.
+
+### Tasks
+
+- [x] TUI Dashboard: sub-group archived plan sections under "Implementation Plan" node within Archive
+- [x] TUI Task Board: sub-group archived plan tasks under "Implementation Plan" heading within Archive
+- [x] Web Dashboard: sub-group archived plan cards under "Implementation Plan" sub-heading within Archive
+- [x] Web Tasks: sub-group archived plan tasks under "Implementation Plan" heading within Archive
+- [x] Tests: add tests for archive sub-grouping in both TUI and web
+- [x] Update `specs/todo.md`: mark "Preserve group headings" as complete
+- [x] Update `CLAUDE.md` and `AGENTS.md` if any patterns changed
+
+---
+
 ## Spec: Track IMPLEMENTATION_PLAN.md (`specs/track-implementation-plan.md`) — DONE
 
 **Status:** done | **Priority:** high | **Tags:** core, dogfooding, archive
