@@ -182,6 +182,81 @@ The spec requires a persistent, always-visible progress bar at the bottom of bot
 
 ---
 
+## Spec: Loop History View (`specs/loop-history.md`)
+
+**Status:** in-progress | **Priority:** high | **Tags:** core, tui, web, ux
+
+### Gap Analysis
+
+The spec requires a dedicated history view in both TUI and web showing a timeline of git commits, with loop iteration detection, file changes, and tasks completed.
+
+**Current state:**
+- No `core/history.py` module exists.
+- No `CommitEntry` data model exists.
+- TUI has `d` (dashboard) and `t` (tasks) screens; no `l` (loops/history) screen.
+- Web has `/` (dashboard) and `/tasks` routes; no `/history` route.
+- No git-related functionality exists anywhere in the codebase.
+
+**What's needed:**
+1. Core module (`core/history.py`) — `CommitEntry` dataclass + `get_history()` function using `subprocess.run()` and `git log`/`git show`.
+2. TUI screen (`tui/history.py`) — Two-pane layout (commit list + detail), vim navigation, `l` keybinding, progress bar, watcher support.
+3. Web page + partials — `/history` route, `history.html` template, `/partials/history-content` partial, htmx/SSE wiring.
+4. Tests — Core parsing, edge cases (not a git repo, no commits, no IMPLEMENTATION_PLAN changes).
+
+### Tasks
+
+#### 1. Core: Add `history.py` with `CommitEntry` model and git log parsing — DONE
+
+- [x] Create `src/spec_view/core/history.py` with `CommitEntry` dataclass matching the spec.
+- [x] Implement `get_history(root: Path, limit: int = 50) -> list[CommitEntry]` that parses `git log`.
+- [x] Use single `git log --format=<custom>` call with `--numstat` to avoid N+1.
+- [x] Extract `tasks_completed` by running `git show <hash> -- IMPLEMENTATION_PLAN.md` and parsing `+- [x]` lines from the diff.
+- [x] Detect `is_loop` from `Co-Authored-By:` + `Claude` in commit body (case-insensitive).
+- [x] Handle not-a-git-repo and no-commits gracefully (return empty list).
+- [x] Add tests in `tests/test_history.py` (14 tests covering all cases).
+- **Done when:** `get_history()` returns correct `CommitEntry` list from a test git repo, all tests pass.
+
+##### Files Created
+- `src/spec_view/core/history.py` — `CommitEntry` dataclass, `get_history()` function, internal helpers for git log parsing, numstat parsing, loop detection, and task extraction from IMPLEMENTATION_PLAN.md diffs
+- `tests/test_history.py` — 14 tests: not-a-repo, empty repo, single commit, loop detection (case-insensitive), manual commit, multiple commits order, limit parameter, file stats, task extraction, markdown stripping, no plan changes, multiple files, dataclass construction
+
+#### 2. TUI: Add Loop History screen with two-pane layout
+
+- [ ] Create `src/spec_view/tui/history.py` with `HistoryScreen` — two-pane layout (commit list left, detail right).
+- [ ] Add `l` keybinding to `app.py` for switching to history screen.
+- [ ] Commit list: timestamp (relative), short hash, loop/manual badge, message, file count + stat summary, tasks completed.
+- [ ] Detail pane: full commit message, changed files list, tasks completed.
+- [ ] Vim-style navigation: `j`/`k` scroll list, `enter`/`l` to detail, `h` back to list.
+- [ ] Include `ProgressBarWidget` at bottom.
+- [ ] Support `update_groups()` for live refresh (re-read git history).
+- **Done when:** `l` keybinding opens history screen, commits display correctly with loop detection.
+
+#### 3. Web: Add history page with htmx live updates
+
+- [ ] Add `GET /history` full-page route and `GET /partials/history-content` partial route.
+- [ ] Create `templates/history.html` and `templates/partials/history_content.html`.
+- [ ] Add "History" nav link to `base.html`.
+- [ ] Each commit: timestamp, hash, loop/manual badge, message, file count + stat, tasks completed.
+- [ ] Expandable detail: full body, changed files, tasks.
+- [ ] Wire to SSE: `hx-trigger="load, specchange from:body"`.
+- [ ] Style to match dark theme.
+- **Done when:** `/history` shows commits, updates live via SSE.
+
+#### 4. Tests: Comprehensive test coverage
+
+- [ ] Core tests: normal parsing, loop detection, task extraction, not-a-repo, no commits, empty plan changes.
+- [ ] Web tests: `/history` page, `/partials/history-content` partial, template rendering.
+- **Done when:** All tests pass with `pytest`.
+
+### Priority Order & Dependencies
+
+1. **Task 1** (Core) — foundational, both UIs depend on it
+2. **Task 2** (TUI) — depends on task 1
+3. **Task 3** (Web) — depends on task 1, independent of task 2
+4. **Task 4** (Tests) — incremental, added with each task
+
+---
+
 ## Discovered Issues
 
 - None yet.
