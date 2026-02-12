@@ -68,7 +68,7 @@ Context updates are mandatory, not optional. Stale docs cause stale decisions.
 - **Archive detection**: scanner auto-tags specs in `archive/` directories; UIs partition on `"archive" in g.tags`
 - **Active/archived partitioning**: both TUI and web split groups via `_partition_groups()` or inline list comprehensions
 - **Watcher scope**: watches both `spec_paths` dirs and parent dirs of `include` pattern matches for live reload
-- **TUI navigation**: vim-style — `j`/`k` scroll, `h` back to tree, `enter` opens detail, `q`/`d`/`t`/`r` global
+- **TUI navigation**: vim-style — `j`/`k` scroll, `h` back to tree, `enter` opens detail, `q`/`d`/`t`/`l`/`r` global
 - **TUI scrolling**: detail pane uses `VerticalScroll` with inner `Static` (not `Static` alone, which auto-sizes and can't scroll)
 - **Task board grouping**: tasks are grouped under spec name headings, not flattened into a mixed list
 - **Web collapsible sections**: reuse `.archive-section.collapsed` pattern with `onclick` toggle

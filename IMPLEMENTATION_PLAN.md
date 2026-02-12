@@ -220,16 +220,20 @@ The spec requires a dedicated history view in both TUI and web showing a timelin
 - `src/spec_view/core/history.py` — `CommitEntry` dataclass, `get_history()` function, internal helpers for git log parsing, numstat parsing, loop detection, and task extraction from IMPLEMENTATION_PLAN.md diffs
 - `tests/test_history.py` — 14 tests: not-a-repo, empty repo, single commit, loop detection (case-insensitive), manual commit, multiple commits order, limit parameter, file stats, task extraction, markdown stripping, no plan changes, multiple files, dataclass construction
 
-#### 2. TUI: Add Loop History screen with two-pane layout
+#### 2. TUI: Add Loop History screen with two-pane layout — DONE
 
-- [ ] Create `src/spec_view/tui/history.py` with `HistoryScreen` — two-pane layout (commit list left, detail right).
-- [ ] Add `l` keybinding to `app.py` for switching to history screen.
-- [ ] Commit list: timestamp (relative), short hash, loop/manual badge, message, file count + stat summary, tasks completed.
-- [ ] Detail pane: full commit message, changed files list, tasks completed.
-- [ ] Vim-style navigation: `j`/`k` scroll list, `enter`/`l` to detail, `h` back to list.
-- [ ] Include `ProgressBarWidget` at bottom.
-- [ ] Support `update_groups()` for live refresh (re-read git history).
+- [x] Create `src/spec_view/tui/history.py` with `HistoryScreen` — two-pane layout (commit list left, detail right).
+- [x] Add `l` keybinding to `app.py` for switching to history screen.
+- [x] Commit list: timestamp (relative), short hash, loop/manual badge, message, file count + stat summary, tasks completed.
+- [x] Detail pane: full commit message, changed files list, tasks completed.
+- [x] Vim-style navigation: `j`/`k` scroll list, `enter`/`l` to detail, `h` back to list.
+- [x] Include `ProgressBarWidget` at bottom.
+- [x] Support `update_groups()` for live refresh (re-read git history).
 - **Done when:** `l` keybinding opens history screen, commits display correctly with loop detection.
+
+##### Files Created/Modified
+- `src/spec_view/tui/history.py` — new `HistoryScreen` with `CommitListItem`, `CommitDetailView`, `_relative_time()` helper, two-pane `ListView`/`Static` layout, vim-style j/k navigation, `update_groups()` for live refresh
+- `src/spec_view/tui/app.py` — added `l` keybinding (`action_switch_history`), imported `HistoryScreen`
 
 #### 3. Web: Add history page with htmx live updates
 

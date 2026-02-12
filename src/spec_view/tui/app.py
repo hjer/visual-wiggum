@@ -12,6 +12,7 @@ from ..core.config import Config
 from ..core.models import SpecGroup
 from ..core.scanner import scan_specs
 from .dashboard import DashboardScreen
+from .history import HistoryScreen
 from .task_board import TaskBoardScreen
 
 
@@ -29,6 +30,7 @@ class SpecViewApp(App):
         Binding("q", "quit", "Quit"),
         Binding("d", "switch_dashboard", "Dashboard", show=True),
         Binding("t", "switch_tasks", "Tasks", show=True),
+        Binding("l", "switch_history", "History", show=True),
     ]
 
     def __init__(
@@ -73,6 +75,10 @@ class SpecViewApp(App):
     def action_switch_tasks(self) -> None:
         self.pop_screen()
         self.push_screen(TaskBoardScreen(self.spec_groups))
+
+    def action_switch_history(self) -> None:
+        self.pop_screen()
+        self.push_screen(HistoryScreen(self.spec_groups, self.root))
 
     def action_refresh(self) -> None:
         new_groups = scan_specs(self.root, self.config)
