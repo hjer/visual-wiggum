@@ -376,9 +376,23 @@ Tasks 5 and 6 can be done in parallel once task 4 is complete.
 
 ---
 
+## Housekeeping: Tech Debt & Code Quality
+
+**Status:** draft | **Priority:** medium | **Tags:** chore, quality
+
+Gap analysis (2026-02-12) found all specs fully implemented and archived. 176 tests pass. Three code quality issues discovered:
+
+### Tasks
+
+- [ ] Fix version mismatch: `pyproject.toml` says `0.3.2` but `src/spec_view/__init__.py` says `0.2.2`. Sync `__init__.py` to match `pyproject.toml` (source of truth for the build system).
+- [ ] Fix deprecated `TemplateResponse` signature in `src/spec_view/web/server.py` (9 call sites). Change from `TemplateResponse(name, context)` to `TemplateResponse(request, name)` with context as keyword arg — eliminates 26 deprecation warnings in tests.
+- [ ] Remove unused `CommitEntry` import in `src/spec_view/web/server.py` (line 18). Only `get_history` is used.
+
+---
+
 ## Discovered Issues
 
-(No outstanding issues.)
+(No outstanding issues beyond housekeeping above.)
 
 ## Learnings
 
