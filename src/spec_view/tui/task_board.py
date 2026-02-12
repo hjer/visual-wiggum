@@ -9,6 +9,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static
 
 from ..core.models import Phase, SpecGroup, Task
+from .progress_bar import ProgressBarWidget
 
 
 class TaskBoardScreen(Screen):
@@ -25,6 +26,10 @@ class TaskBoardScreen(Screen):
         padding: 1 2;
         overflow-y: auto;
     }
+
+    ProgressBarWidget {
+        dock: bottom;
+    }
     """
 
     BINDINGS = [
@@ -40,13 +45,16 @@ class TaskBoardScreen(Screen):
         yield Header()
         with Vertical(id="task-content"):
             yield Static(self._build_content(), id="task-body")
+        yield ProgressBarWidget(self.groups, id="status-bar")
         yield Footer()
 
     def update_groups(self, groups: list[SpecGroup]) -> None:
-        """Live-update task board content."""
+        """Live-update task board content and progress bar."""
         self.groups = groups
         body = self.query_one("#task-body", Static)
         body.update(self._build_content())
+        status_bar = self.query_one("#status-bar", ProgressBarWidget)
+        status_bar.update_groups(groups)
 
     def _build_content(self) -> str:
         """Build the full Rich-formatted task board text."""

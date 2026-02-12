@@ -136,10 +136,13 @@ The spec requires a persistent, always-visible progress bar at the bottom of bot
 - `src/spec_view/tui/progress_bar.py` — new `ProgressBarWidget(Static)` with `_render()` and `update_groups()` methods, 20-char bar with `━`/`─` characters, green fill, percentage + fraction + spec counts + archive count
 - `src/spec_view/tui/dashboard.py` — replaced `Static` status bar with `ProgressBarWidget`, removed `_status_summary()` method, updated `_update_status_bar()` to call `update_groups()`
 
-#### 2. TUI: Add progress bar to TaskBoardScreen
-- [ ] In `src/spec_view/tui/task_board.py`, add the shared progress bar widget (from task 1), docked to bottom, above Footer.
-- [ ] Must live-update when `update_groups()` is called (same pattern as dashboard).
+#### 2. TUI: Add progress bar to TaskBoardScreen — DONE
+- [x] In `src/spec_view/tui/task_board.py`, add the shared progress bar widget (from task 1), docked to bottom, above Footer.
+- [x] Must live-update when `update_groups()` is called (same pattern as dashboard).
 - **Done when:** `TaskBoardScreen` has the same visual progress bar as DashboardScreen, and it updates live via the watcher.
+
+##### Files Modified
+- `src/spec_view/tui/task_board.py` — imported `ProgressBarWidget`, added CSS dock rule, yielded widget in `compose()` with `id="status-bar"`, updated `update_groups()` to refresh the progress bar
 
 #### 3. Web: Add global progress bar to `base.html` with partial endpoint and SSE wiring
 - [ ] Add `GET /partials/global-progress` route in `src/spec_view/web/server.py` returning a progress bar HTML fragment. Use `_partition_groups()` to get active groups only, compute `sum(g.task_done) / sum(g.task_total)` as integer percentage. 0% with empty bar when zero tasks.

@@ -14,7 +14,7 @@ You are in BUILD mode. Implement one task per iteration.
 Implement the selected task:
 
 1. **Implement** — Make the necessary code changes. Use up to 3 parallel subagents for independent changes. If functionality is missing then it's your job to add it.
-2. **Validate** — Run tests with `python -m pytest`. Only 1 subagent for test execution (backpressure). Fix any failures before proceeding.
+2. **Validate** — Run tests with `.venv/bin/pytest`. Only 1 subagent for test execution (backpressure). Fix any failures before proceeding.
 3. **Update** — Mark the task as complete in `IMPLEMENTATION_PLAN.md`. Note any discoveries, new issues, or blockers you found.
 4. **Commit** — Stage your changes and create a git commit with a message that captures the why.
 
