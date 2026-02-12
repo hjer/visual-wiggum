@@ -15,7 +15,7 @@ The wiggum loop produces an `IMPLEMENTATION_PLAN.md` with multiple independent s
 
 ```markdown
 ## Spec: Track IMPLEMENTATION_PLAN.md (...) — DONE
-**Status:** done | **Priority:** high | **Tags:** core, dogfooding
+**Status:** done | **Priority:** high | **Tags:** core, dogfooding, archive
 ### Tasks
 - [x] Task one
 - [x] Task two
@@ -23,7 +23,7 @@ The wiggum loop produces an `IMPLEMENTATION_PLAN.md` with multiple independent s
 ---
 
 ## Collapsible Archive Section — DONE
-**Status:** done | **Priority:** medium | **Tags:** tui, web, ux
+**Status:** done | **Priority:** medium | **Tags:** tui, web, ux, archive
 ### Tasks
 - [x] Task one
 - [x] Task two
@@ -31,7 +31,7 @@ The wiggum loop produces an `IMPLEMENTATION_PLAN.md` with multiple independent s
 ---
 
 ## Spec: Global Progress Bar (...) — DONE
-**Status:** done | **Priority:** high | **Tags:** tui, web, ux
+**Status:** done | **Priority:** high | **Tags:** tui, web, ux, archive
 ### Tasks
 #### 1. TUI: Create shared progress bar widget — DONE
 - [x] Subtask
