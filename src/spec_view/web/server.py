@@ -75,16 +75,18 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     def _partition_groups(
         groups: list[SpecGroup],
-    ) -> tuple[list[SpecGroup], list[SpecGroup]]:
-        active = [g for g in groups if "archive" not in g.tags]
+    ) -> tuple[list[SpecGroup], list[SpecGroup], list[SpecGroup]]:
+        active = [g for g in groups if "archive" not in g.tags and "plan" not in g.tags]
+        plan = [g for g in groups if "plan" in g.tags and "archive" not in g.tags]
         archived = [g for g in groups if "archive" in g.tags]
-        return active, archived
+        return active, plan, archived
 
     def _dashboard_context(request: Request) -> dict:
         groups = _get_groups()
-        active, archived = _partition_groups(groups)
-        total_tasks = sum(g.task_total for g in active)
-        done_tasks = sum(g.task_done for g in active)
+        active, plan, archived = _partition_groups(groups)
+        all_counted = active + plan
+        total_tasks = sum(g.task_total for g in all_counted)
+        done_tasks = sum(g.task_done for g in all_counted)
         overall_percent = int(done_tasks / total_tasks * 100) if total_tasks else 0
 
         status_counts: dict[str, int] = {}
@@ -95,6 +97,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
         return {
             "request": request,
             "groups": active,
+            "plan_groups": plan,
             "archived_groups": archived,
             "total_tasks": total_tasks,
             "done_tasks": done_tasks,
@@ -104,7 +107,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     def _tasks_context(request: Request) -> dict:
         groups = _get_groups()
-        active, archived = _partition_groups(groups)
+        active, plan, archived = _partition_groups(groups)
 
         columns: dict[str, list[dict]] = {
             "draft": [],
@@ -138,20 +141,32 @@ def create_app(root: Path, config: Config) -> FastAPI:
             all_task_trees.extend(group.all_task_trees)
             all_phases.extend(group.all_phases)
 
+        plan_tasks = []
+        plan_task_trees = []
+        plan_groups_data = []
+        for group in plan:
+            plan_tasks.extend(group.all_tasks)
+            plan_task_trees.extend(group.all_task_trees)
+            plan_groups_data.append(group)
+
         archived_tasks = []
         archived_task_trees = []
         for group in archived:
             archived_tasks.extend(group.all_tasks)
             archived_task_trees.extend(group.all_task_trees)
 
+        combined_tasks = all_tasks + plan_tasks
         return {
             "request": request,
             "columns": columns,
             "all_tasks": all_tasks,
             "all_task_trees": all_task_trees,
             "all_phases": all_phases,
-            "total": len(all_tasks),
-            "done": sum(1 for t in all_tasks if t.done),
+            "plan_groups": plan,
+            "plan_tasks": plan_tasks,
+            "plan_task_trees": plan_task_trees,
+            "total": len(combined_tasks),
+            "done": sum(1 for t in combined_tasks if t.done),
             "archived_tasks": archived_tasks,
             "archived_task_trees": archived_task_trees,
         }
@@ -238,9 +253,10 @@ def create_app(root: Path, config: Config) -> FastAPI:
     @app.get("/partials/global-progress", response_class=HTMLResponse)
     async def partial_global_progress(request: Request) -> HTMLResponse:
         groups = _get_groups()
-        active, _archived = _partition_groups(groups)
-        total = sum(g.task_total for g in active)
-        done = sum(g.task_done for g in active)
+        active, plan, _archived = _partition_groups(groups)
+        all_counted = active + plan
+        total = sum(g.task_total for g in all_counted)
+        done = sum(g.task_done for g in all_counted)
         percent = int(done / total * 100) if total else 0
         return templates.TemplateResponse(
             "partials/global_progress.html",

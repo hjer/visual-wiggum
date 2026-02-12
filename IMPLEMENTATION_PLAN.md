@@ -325,11 +325,14 @@ TUI is **partially implemented** (uncommitted):
 ##### Files Created
 - `tests/test_wiggum.py` — 50 tests across 8 test classes: `TestDetectFormatWiggum` (5 tests — wiggum detection, precedence over spec-kit/openspec), `TestCleanSectionTitle` (8 tests — DONE suffix variants, Spec: prefix, parenthetical refs, combined), `TestSlugify` (3 tests), `TestParsePlanSections` (17 tests — multi-section split, structural section skipping, status from heading/body, title cleaning, section-specific tasks, plan tag, priority defaults, single section, no-tasks-with-status, nested subsections, body/path preservation, task trees, empty/no-h2), `TestPlanSectionModel` (5 tests — computed properties), `TestExpandWiggumSections` (9 tests — group count, tags, plan-done tag, slugs, titles, task counts, status/priority, format type, empty), `TestScanSpecsWiggum` (3 tests — integration with scan_specs, ordering)
 
-#### 4. Web: Update `_partition_groups()` to separate plan groups
-- [ ] Update `_partition_groups()` in `server.py` to return `(active, plan, archived)` triple instead of `(active, archived)` pair. Plan groups are those tagged `"plan"` and not `"archive"`.
-- [ ] Update all callers of `_partition_groups()`: `_dashboard_context()`, `_tasks_context()`, `partial_global_progress()`.
-- [ ] Global progress bar should include plan groups in the count (plan tasks are real work).
+#### 4. Web: Update `_partition_groups()` to separate plan groups — DONE
+- [x] Update `_partition_groups()` in `server.py` to return `(active, plan, archived)` triple instead of `(active, archived)` pair. Plan groups are those tagged `"plan"` and not `"archive"`.
+- [x] Update all callers of `_partition_groups()`: `_dashboard_context()`, `_tasks_context()`, `partial_global_progress()`.
+- [x] Global progress bar should include plan groups in the count (plan tasks are real work).
 - **Done when:** Server correctly partitions groups into three categories. Existing tests still pass.
+
+##### Files Modified
+- `src/spec_view/web/server.py` — `_partition_groups()` returns `(active, plan, archived)` triple; `_dashboard_context()` passes `plan_groups` and includes plan tasks in overall progress; `_tasks_context()` passes `plan_groups`, `plan_tasks`, `plan_task_trees` and includes plan tasks in total/done counts; `partial_global_progress()` includes plan groups in progress calculation
 
 #### 5. Web: Dashboard plan section grouping
 - [ ] Update `_dashboard_context()` to pass `plan_groups` to the template.
