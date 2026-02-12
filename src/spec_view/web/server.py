@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -14,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ..core.config import Config
+from ..core.history import CommitEntry, get_history
 from ..core.models import SpecGroup, Status
 from ..core.scanner import scan_specs
 from ..core.watcher import SpecChangeNotifier, start_watcher_thread
@@ -35,6 +37,32 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     templates = Jinja2Templates(directory=TEMPLATE_DIR)
+
+    def _timeago(dt: datetime) -> str:
+        """Format a datetime as a human-friendly relative time string."""
+        now = datetime.now(timezone.utc)
+        diff = now - dt
+        seconds = int(diff.total_seconds())
+        if seconds < 0:
+            return "just now"
+        if seconds < 60:
+            return f"{seconds}s ago"
+        minutes = seconds // 60
+        if minutes < 60:
+            return f"{minutes}m ago"
+        hours = minutes // 60
+        if hours < 24:
+            return f"{hours}h ago"
+        days = hours // 24
+        if days < 30:
+            return f"{days}d ago"
+        months = days // 30
+        if months < 12:
+            return f"{months}mo ago"
+        years = days // 365
+        return f"{years}y ago"
+
+    templates.env.filters["timeago"] = _timeago
 
     def _render_md(text: str) -> str:
         return markdown.markdown(
@@ -147,6 +175,18 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "stories": group.stories,
         }
 
+    def _history_context(request: Request) -> dict:
+        entries = get_history(root)
+        loop_count = sum(1 for e in entries if e.is_loop)
+        manual_count = sum(1 for e in entries if not e.is_loop)
+        return {
+            "request": request,
+            "entries": entries,
+            "total": len(entries),
+            "loop_count": loop_count,
+            "manual_count": manual_count,
+        }
+
     # --- Full page routes ---
 
     @app.get("/", response_class=HTMLResponse)
@@ -164,6 +204,10 @@ def create_app(root: Path, config: Config) -> FastAPI:
     async def task_board(request: Request) -> HTMLResponse:
         return templates.TemplateResponse("tasks.html", _tasks_context(request))
 
+    @app.get("/history", response_class=HTMLResponse)
+    async def history(request: Request) -> HTMLResponse:
+        return templates.TemplateResponse("history.html", _history_context(request))
+
     # --- Partial endpoints for htmx ---
 
     @app.get("/partials/dashboard-content", response_class=HTMLResponse)
@@ -176,6 +220,12 @@ def create_app(root: Path, config: Config) -> FastAPI:
     async def partial_tasks(request: Request) -> HTMLResponse:
         return templates.TemplateResponse(
             "partials/tasks_content.html", _tasks_context(request)
+        )
+
+    @app.get("/partials/history-content", response_class=HTMLResponse)
+    async def partial_history(request: Request) -> HTMLResponse:
+        return templates.TemplateResponse(
+            "partials/history_content.html", _history_context(request)
         )
 
     @app.get("/partials/spec-content/{name}", response_class=HTMLResponse)

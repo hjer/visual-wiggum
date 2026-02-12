@@ -727,6 +727,152 @@ h2 {
     z-index: 1;
 }
 
+/* History timeline */
+.history-summary {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s;
+    cursor: pointer;
+}
+
+.history-entry:hover {
+    border-color: var(--accent);
+}
+
+.history-entry.loop-commit {
+    border-left: 3px solid var(--green);
+}
+
+.history-row {
+    padding: 1rem 1.25rem;
+}
+
+.history-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.history-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.history-hash {
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: var(--bg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+}
+
+.history-badge {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badge-loop {
+    background: #1a3a1a;
+    color: var(--green);
+}
+
+.badge-manual {
+    background: #30363d;
+    color: var(--text-muted);
+}
+
+.history-message {
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+}
+
+.history-stats {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.history-additions {
+    color: var(--green);
+}
+
+.history-deletions {
+    color: var(--red);
+}
+
+.history-tasks-summary {
+    margin-top: 0.5rem;
+}
+
+.history-task-item {
+    font-size: 0.8rem;
+    color: var(--green);
+    padding: 0.1rem 0;
+}
+
+/* Expandable detail */
+.history-detail {
+    display: none;
+    padding: 0 1.25rem 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.history-entry.expanded .history-detail {
+    display: block;
+}
+
+.history-detail h4 {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0.75rem 0 0.35rem;
+}
+
+.history-detail pre {
+    background: var(--bg);
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.history-file-path {
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 0.15rem 0;
+}
+
+.history-task-done {
+    font-size: 0.85rem;
+    color: var(--green);
+    padding: 0.15rem 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .kanban {

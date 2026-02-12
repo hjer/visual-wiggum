@@ -1,0 +1,72 @@
+<div id="history-content" hx-get="/partials/history-content" hx-trigger="specchange from:body" hx-swap="outerHTML">
+<h1>Loop History</h1>
+
+{% if entries %}
+<div class="history-summary">
+    <span class="pill pill-in-progress">{{ total }} commits</span>
+    {% if loop_count %}
+    <span class="pill pill-done">{{ loop_count }} loop</span>
+    {% endif %}
+    {% if manual_count %}
+    <span class="pill pill-draft">{{ manual_count }} manual</span>
+    {% endif %}
+</div>
+
+<div class="history-timeline">
+    {% for entry in entries %}
+    <div class="history-entry{% if entry.is_loop %} loop-commit{% endif %}" onclick="this.classList.toggle('expanded')">
+        <div class="history-row">
+            <div class="history-meta">
+                <span class="history-time">{{ entry.timestamp|timeago }}</span>
+                <code class="history-hash">{{ entry.hash }}</code>
+                {% if entry.is_loop %}
+                <span class="history-badge badge-loop">loop</span>
+                {% else %}
+                <span class="history-badge badge-manual">manual</span>
+                {% endif %}
+            </div>
+            <div class="history-message">{{ entry.message }}</div>
+            <div class="history-stats">
+                <span class="history-files">{{ entry.files_changed }} file{{ 's' if entry.files_changed != 1 }}</span>
+                <span class="history-additions">+{{ entry.insertions }}</span>
+                <span class="history-deletions">-{{ entry.deletions }}</span>
+            </div>
+            {% if entry.tasks_completed %}
+            <div class="history-tasks-summary">
+                {% for task in entry.tasks_completed %}
+                <div class="history-task-item">&#x2714; {{ task }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="history-detail">
+            {% if entry.body %}
+            <div class="history-body">
+                <h4>Commit message</h4>
+                <pre>{{ entry.body }}</pre>
+            </div>
+            {% endif %}
+            {% if entry.changed_files %}
+            <div class="history-files-list">
+                <h4>Changed files</h4>
+                {% for file in entry.changed_files %}
+                <div class="history-file-path">{{ file }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if entry.tasks_completed %}
+            <div class="history-tasks-detail">
+                <h4>Tasks completed</h4>
+                {% for task in entry.tasks_completed %}
+                <div class="history-task-done">&#x2714; {{ task }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No git history available.</p>
+{% endif %}
+</div>

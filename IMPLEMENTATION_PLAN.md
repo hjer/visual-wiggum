@@ -182,9 +182,9 @@ The spec requires a persistent, always-visible progress bar at the bottom of bot
 
 ---
 
-## Spec: Loop History View (`specs/loop-history.md`)
+## Spec: Loop History View (`specs/loop-history.md`) — DONE
 
-**Status:** in-progress | **Priority:** high | **Tags:** core, tui, web, ux
+**Status:** done | **Priority:** high | **Tags:** core, tui, web, ux
 
 ### Gap Analysis
 
@@ -235,22 +235,32 @@ The spec requires a dedicated history view in both TUI and web showing a timelin
 - `src/spec_view/tui/history.py` — new `HistoryScreen` with `CommitListItem`, `CommitDetailView`, `_relative_time()` helper, two-pane `ListView`/`Static` layout, vim-style j/k navigation, `update_groups()` for live refresh
 - `src/spec_view/tui/app.py` — added `l` keybinding (`action_switch_history`), imported `HistoryScreen`
 
-#### 3. Web: Add history page with htmx live updates
+#### 3. Web: Add history page with htmx live updates — DONE
 
-- [ ] Add `GET /history` full-page route and `GET /partials/history-content` partial route.
-- [ ] Create `templates/history.html` and `templates/partials/history_content.html`.
-- [ ] Add "History" nav link to `base.html`.
-- [ ] Each commit: timestamp, hash, loop/manual badge, message, file count + stat, tasks completed.
-- [ ] Expandable detail: full body, changed files, tasks.
-- [ ] Wire to SSE: `hx-trigger="load, specchange from:body"`.
-- [ ] Style to match dark theme.
+- [x] Add `GET /history` full-page route and `GET /partials/history-content` partial route.
+- [x] Create `templates/history.html` and `templates/partials/history_content.html`.
+- [x] Add "History" nav link to `base.html`.
+- [x] Each commit: timestamp, hash, loop/manual badge, message, file count + stat, tasks completed.
+- [x] Expandable detail: full body, changed files, tasks.
+- [x] Wire to SSE: `hx-trigger="load, specchange from:body"`.
+- [x] Style to match dark theme.
 - **Done when:** `/history` shows commits, updates live via SSE.
 
-#### 4. Tests: Comprehensive test coverage
+##### Files Created/Modified
+- `src/spec_view/web/server.py` — added `get_history` import, `_timeago` Jinja2 filter, `_history_context()` helper, `GET /history` full-page route, `GET /partials/history-content` partial route
+- `src/spec_view/web/templates/history.html` — new page extending base.html
+- `src/spec_view/web/templates/partials/history_content.html` — new partial with timeline, commit entries (expandable), summary pills, htmx wiring
+- `src/spec_view/web/templates/base.html` — added "History" nav link
+- `src/spec_view/web/static/style.css` — added history timeline styles (`.history-entry`, `.loop-commit`, badges, expandable detail, file paths, task items)
 
-- [ ] Core tests: normal parsing, loop detection, task extraction, not-a-repo, no commits, empty plan changes.
-- [ ] Web tests: `/history` page, `/partials/history-content` partial, template rendering.
+#### 4. Tests: Comprehensive test coverage — DONE
+
+- [x] Core tests: normal parsing, loop detection, task extraction, not-a-repo, no commits, empty plan changes (14 tests in `test_history.py`).
+- [x] Web tests: `/history` page, `/partials/history-content` partial, template rendering (8 tests in `test_web_history.py`).
 - **Done when:** All tests pass with `pytest`.
+
+##### Files Created
+- `tests/test_web_history.py` — 8 async tests: page rendering, partial with htmx attrs, loop/manual badges, tasks completed display, file stats, empty state, summary counts, nav link presence
 
 ### Priority Order & Dependencies
 
