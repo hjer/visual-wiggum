@@ -6,12 +6,13 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, Tree
 from textual.widgets.tree import TreeNode
 
 from ..core.models import SpecGroup, Status
+from .progress_bar import ProgressBarWidget
 from .spec_view import SpecDetailView
 
 
@@ -63,12 +64,8 @@ class DashboardScreen(Screen):
         height: 100%;
     }
 
-    #status-bar {
+    ProgressBarWidget {
         dock: bottom;
-        height: 1;
-        background: $primary;
-        color: $text;
-        padding: 0 1;
     }
     """
 
@@ -94,7 +91,7 @@ class DashboardScreen(Screen):
             self._populate_tree(tree)
             yield tree
             yield SpecDetailView(id="detail-pane")
-        yield Static(self._status_summary(), id="status-bar")
+        yield ProgressBarWidget(self.groups, id="status-bar")
         yield Footer()
 
     def _populate_tree(self, tree: SpecTree) -> None:
@@ -171,8 +168,8 @@ class DashboardScreen(Screen):
             pass
 
     def _update_status_bar(self) -> None:
-        status_bar = self.query_one("#status-bar", Static)
-        status_bar.update(self._status_summary())
+        status_bar = self.query_one("#status-bar", ProgressBarWidget)
+        status_bar.update_groups(self.groups)
 
     def _refresh_detail(self) -> None:
         """Re-render the detail pane if a group is selected."""
@@ -184,16 +181,3 @@ class DashboardScreen(Screen):
                 detail.show_group(group)
                 return
 
-    def _status_summary(self) -> str:
-        active = [g for g in self.groups if "archive" not in g.tags]
-        archived = [g for g in self.groups if "archive" in g.tags]
-        counts: dict[str, int] = {}
-        for g in active:
-            s = g.status.value
-            counts[s] = counts.get(s, 0) + 1
-        parts = [f"{v} {k}" for k, v in counts.items()]
-        total_tasks = sum(g.task_total for g in active)
-        done_tasks = sum(g.task_done for g in active)
-        task_str = f" | Tasks: {done_tasks}/{total_tasks}" if total_tasks else ""
-        archive_str = f" | {len(archived)} archived" if archived else ""
-        return f" {len(active)} specs: {', '.join(parts)}{task_str}{archive_str}"

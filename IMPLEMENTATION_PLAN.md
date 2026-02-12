@@ -125,12 +125,16 @@ The spec requires a persistent, always-visible progress bar at the bottom of bot
 
 ### Tasks
 
-#### 1. TUI: Create shared progress bar widget and add to DashboardScreen
-- [ ] Create a reusable progress bar widget (or rendering function) in `src/spec_view/tui/` that both screens can use. Use Rich bar characters (`━` filled, `─` unfilled) in a `Static` widget — simpler than Textual's `ProgressBar` and fits the 1-row constraint.
-- [ ] In `src/spec_view/tui/dashboard.py`, replace the plain-text `#status-bar` with this widget. Display: green-filled bar + percentage + fraction (`done/total`) + existing spec status counts (e.g. "3 draft, 2 done") + archived count.
-- [ ] Keep it exactly 1 row tall, docked to bottom, above the Footer. Green fill on dark surface background.
-- [ ] Compute progress on **active groups only** (exclude archived), matching existing `_status_summary()` behavior.
+#### 1. TUI: Create shared progress bar widget and add to DashboardScreen — DONE
+- [x] Create a reusable progress bar widget (or rendering function) in `src/spec_view/tui/` that both screens can use. Use Rich bar characters (`━` filled, `─` unfilled) in a `Static` widget — simpler than Textual's `ProgressBar` and fits the 1-row constraint.
+- [x] In `src/spec_view/tui/dashboard.py`, replace the plain-text `#status-bar` with this widget. Display: green-filled bar + percentage + fraction (`done/total`) + existing spec status counts (e.g. "3 draft, 2 done") + archived count.
+- [x] Keep it exactly 1 row tall, docked to bottom, above the Footer. Green fill on dark surface background.
+- [x] Compute progress on **active groups only** (exclude archived), matching existing `_status_summary()` behavior.
 - **Done when:** `DashboardScreen` shows a green-filled bar with percentage, fraction, and status counts in a single bottom row above Footer. The widget is importable by TaskBoardScreen.
+
+##### Files Created/Modified
+- `src/spec_view/tui/progress_bar.py` — new `ProgressBarWidget(Static)` with `_render()` and `update_groups()` methods, 20-char bar with `━`/`─` characters, green fill, percentage + fraction + spec counts + archive count
+- `src/spec_view/tui/dashboard.py` — replaced `Static` status bar with `ProgressBarWidget`, removed `_status_summary()` method, updated `_update_status_bar()` to call `update_groups()`
 
 #### 2. TUI: Add progress bar to TaskBoardScreen
 - [ ] In `src/spec_view/tui/task_board.py`, add the shared progress bar widget (from task 1), docked to bottom, above Footer.
