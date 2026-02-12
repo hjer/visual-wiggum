@@ -7,7 +7,7 @@ from pathlib import Path
 
 import frontmatter
 
-from .models import Phase, Priority, SpecFile, Status, Task
+from .models import Phase, PlanSection, Priority, SpecFile, Status, Task
 
 TASK_RE = re.compile(r"^( *)- \[([ xX])\]\*? (.+)$", re.MULTILINE)
 PHASE_RE = re.compile(r"^## Phase (\d+):\s*(.+)$", re.MULTILINE)
@@ -15,6 +15,11 @@ CHECKPOINT_RE = re.compile(r"^\*\*Checkpoint\*\*:\s*(.+)$", re.MULTILINE)
 TASK_ID_RE = re.compile(r"^(T\d+)\s+")
 STORY_RE = re.compile(r"\[(US\d+)\]")
 OPENSPEC_SECTION_RE = re.compile(r"^## \d+\.", re.MULTILINE)
+H2_RE = re.compile(r"^## (.+)$", re.MULTILINE)
+STATUS_LINE_RE = re.compile(r"^\*\*Status:\*\*\s*(\S+)", re.MULTILINE)
+PRIORITY_LINE_RE = re.compile(r"\*\*Priority:\*\*\s*(\S+)", re.MULTILINE)
+TAGS_LINE_RE = re.compile(r"\*\*Tags:\*\*\s*(.+?)(?:\s*\||\s*$)", re.MULTILINE)
+DONE_SUFFIX_RE = re.compile(r"\s*[—–-]+\s*DONE\s*$", re.IGNORECASE)
 
 
 def detect_format(body: str, path: Path) -> str:
@@ -23,6 +28,11 @@ def detect_format(body: str, path: Path) -> str:
         return "kiro"
     if PHASE_RE.search(body) and re.search(r"- \[[ xX]\]\*? T\d+", body):
         return "spec-kit"
+    # Wiggum: multiple ## sections with **Status:** metadata lines
+    h2_count = len(H2_RE.findall(body))
+    status_count = len(STATUS_LINE_RE.findall(body))
+    if h2_count >= 2 and status_count >= 2:
+        return "wiggum"
     if OPENSPEC_SECTION_RE.search(body):
         return "openspec"
     return "generic"
@@ -180,6 +190,104 @@ def _parse_phases(body: str, flat_tasks: list[Task]) -> list[Phase]:
         ))
 
     return phases
+
+
+def _clean_section_title(heading: str) -> str:
+    """Clean a plan section heading for display.
+
+    Strips '— DONE' suffix, 'Spec:' prefix, and parenthetical references.
+    """
+    title = DONE_SUFFIX_RE.sub("", heading).strip()
+    # Strip "Spec: " prefix
+    if title.lower().startswith("spec:"):
+        title = title[5:].strip()
+    # Strip parenthetical references like (specs/foo.md)
+    title = re.sub(r"\s*\([^)]*\.md\)", "", title).strip()
+    return title
+
+
+def _slugify(text: str) -> str:
+    """Convert text to a URL/name-friendly slug."""
+    slug = text.lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    return slug.strip("-")
+
+
+def parse_plan_sections(body: str, path: Path) -> list[PlanSection]:
+    """Split a wiggum-format plan body into per-JTBD sections.
+
+    Each ``## `` heading starts a new section. Sections without a
+    ``**Status:**`` line and without task checkboxes are skipped
+    (structural sections like Discovered Issues / Learnings).
+    """
+    sections: list[PlanSection] = []
+
+    # Split at ## boundaries, keeping the heading line
+    parts = re.split(r"(?=^## )", body, flags=re.MULTILINE)
+
+    for part in parts:
+        part = part.strip()
+        if not part.startswith("## "):
+            continue  # preamble before first ##
+
+        # Extract heading
+        first_newline = part.find("\n")
+        if first_newline == -1:
+            heading_line = part[3:]
+            section_body = ""
+        else:
+            heading_line = part[3:first_newline]
+            section_body = part[first_newline + 1:]
+
+        # Check if this is a content section (has status line or tasks)
+        has_status = bool(STATUS_LINE_RE.search(section_body))
+        has_tasks = bool(TASK_RE.search(section_body))
+        if not has_status and not has_tasks:
+            continue  # skip structural sections
+
+        # Title
+        title = _clean_section_title(heading_line)
+
+        # Status: from **Status:** line or — DONE suffix
+        status_match = STATUS_LINE_RE.search(section_body)
+        if DONE_SUFFIX_RE.search(heading_line):
+            status = Status.DONE
+        elif status_match:
+            status = Status.from_str(status_match.group(1))
+        else:
+            status = Status.DRAFT
+
+        # Priority
+        priority_match = PRIORITY_LINE_RE.search(section_body)
+        priority = Priority.from_str(priority_match.group(1)) if priority_match else Priority.MEDIUM
+
+        # Tags
+        tags_match = TAGS_LINE_RE.search(section_body)
+        tags: list[str] = ["plan"]
+        if tags_match:
+            raw_tags = [t.strip() for t in tags_match.group(1).split(",")]
+            for t in raw_tags:
+                if t and t not in tags:
+                    tags.append(t)
+
+        # Tasks
+        slug = _slugify(title)
+        flat_tasks, task_tree = parse_tasks(
+            section_body, spec_name=slug, source_file=str(path)
+        )
+
+        sections.append(PlanSection(
+            title=title,
+            status=status,
+            priority=priority,
+            tags=tags,
+            tasks=flat_tasks,
+            task_tree=task_tree,
+            body=part,  # full section text including heading
+            source_path=path,
+        ))
+
+    return sections
 
 
 def parse_spec_file(path: Path) -> SpecFile:

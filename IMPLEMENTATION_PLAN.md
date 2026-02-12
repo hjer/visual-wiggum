@@ -271,9 +271,103 @@ The spec requires a dedicated history view in both TUI and web showing a timelin
 
 ---
 
+## Spec: Wiggum Plan Section Parsing (`specs/wiggum-plan-sections.md`)
+
+**Status:** in-progress | **Priority:** high | **Tags:** core, tui, web, parser
+
+### Gap Analysis
+
+The spec requires parsing `IMPLEMENTATION_PLAN.md` into separate sections per JTBD, each with its own status, tasks, and progress — instead of treating the entire file as one monolithic spec.
+
+**Current state (uncommitted changes in working tree):**
+
+Core parsing and scanner are **partially implemented** (uncommitted):
+- `PlanSection` dataclass exists in `models.py` with `title`, `status`, `priority`, `tags`, `tasks`, `task_tree`, `body`, `source_path` and computed properties (`task_total`, `task_done`, `task_percent`). ✅ Matches spec.
+- `detect_format()` in `parser.py` detects `"wiggum"` format via `h2_count >= 2 && status_count >= 2`. ✅ Matches spec.
+- `parse_plan_sections()` in `parser.py` splits body at `## ` boundaries, extracts status/priority/tags metadata, strips `— DONE` suffix and `Spec:` prefix from titles, skips structural sections (no status + no tasks). ✅ Matches spec.
+- `_expand_wiggum_sections()` in `scanner.py` converts `PlanSection` objects into virtual `SpecGroup` objects with `"plan"` and `"plan-done"` tags. ✅ Matches spec.
+- `scan_specs()` in `scanner.py` detects wiggum-format files and expands them into per-section groups, preserving file order. ✅ Matches spec.
+
+TUI is **partially implemented** (uncommitted):
+- `dashboard.py` partitions groups into active/plan/archived, renders plan groups under a collapsible "Implementation Plan" parent node with aggregate progress. ✅ Matches spec.
+- `task_board.py` partitions groups into active/plan/archived, renders plan sections under an "Implementation Plan" header with per-section headings and completed sections dimmed. ✅ Matches spec.
+
+**What's still missing:**
+1. **Web dashboard** — No plan section grouping. `_partition_groups()` only splits active/archived; plan groups are lumped with active. The dashboard needs a separate "Implementation Plan" collapsible section with per-section cards.
+2. **Web tasks page** — Same issue. Plan section tasks are not grouped under section headings. Needs per-section grouping matching the TUI task board.
+3. **Web `_partition_groups()`** — Needs to be updated to return a third list: `plan` groups (tagged `"plan"`), separate from active and archived.
+4. **Tests** — No tests for `parse_plan_sections()`, `detect_format("wiggum")`, `_expand_wiggum_sections()`, or `PlanSection` model. No web tests for plan section rendering.
+5. **Uncommitted code needs commit** — The 5 modified files need to be committed before continuing.
+
+### Tasks
+
+#### 1. Core + Scanner: Plan section parsing — DONE (uncommitted)
+- [x] Add `PlanSection` dataclass to `models.py` with computed properties
+- [x] Add `"wiggum"` format detection to `detect_format()` in `parser.py`
+- [x] Add `parse_plan_sections()` to `parser.py` — splits at `## ` boundaries, extracts metadata, skips structural sections
+- [x] Add `_expand_wiggum_sections()` to `scanner.py` — converts `PlanSection` → virtual `SpecGroup` with `"plan"` tag
+- [x] Update `scan_specs()` to detect wiggum-format files and expand them, preserving section order
+- **Done when:** `scan_specs()` returns per-section `SpecGroup` objects from a wiggum-format file.
+
+#### 2. TUI: Dashboard and task board plan grouping — DONE (uncommitted)
+- [x] `dashboard.py`: Partition groups into active/plan/archived; render plan groups under collapsible "Implementation Plan" parent node with aggregate `(done/total)` label
+- [x] `task_board.py`: Partition groups into active/plan/archived; render plan sections under "Implementation Plan" header; dimmed "Completed" separator for done plan sections
+- **Done when:** TUI dashboard tree shows "Implementation Plan" parent node with per-section children; task board groups tasks by section.
+
+#### 3. Tests: Core parsing and scanner expansion — DONE
+- [x] Add tests for `detect_format()` returning `"wiggum"` on plan content
+- [x] Add tests for `parse_plan_sections()` — normal multi-section split, title cleaning (strip `Spec:` prefix, `— DONE` suffix, parenthetical refs), status extraction (from `**Status:**` line and heading suffix), priority/tags extraction, structural section skipping, tasks within sections
+- [x] Add tests for `_expand_wiggum_sections()` — produces correct number of `SpecGroup` objects, each with `"plan"` tag, `"plan-done"` tag when all tasks are done, correct slug names
+- [x] Add tests for `PlanSection` model computed properties (`task_total`, `task_done`, `task_percent`)
+- [x] Add tests for edge cases: single section, empty section, section with no tasks but has status line, nested `####` subsections (tasks belong to parent `## ` section)
+- **Done when:** `.venv/bin/pytest` passes with comprehensive tests for wiggum parsing.
+
+##### Files Created
+- `tests/test_wiggum.py` — 50 tests across 8 test classes: `TestDetectFormatWiggum` (5 tests — wiggum detection, precedence over spec-kit/openspec), `TestCleanSectionTitle` (8 tests — DONE suffix variants, Spec: prefix, parenthetical refs, combined), `TestSlugify` (3 tests), `TestParsePlanSections` (17 tests — multi-section split, structural section skipping, status from heading/body, title cleaning, section-specific tasks, plan tag, priority defaults, single section, no-tasks-with-status, nested subsections, body/path preservation, task trees, empty/no-h2), `TestPlanSectionModel` (5 tests — computed properties), `TestExpandWiggumSections` (9 tests — group count, tags, plan-done tag, slugs, titles, task counts, status/priority, format type, empty), `TestScanSpecsWiggum` (3 tests — integration with scan_specs, ordering)
+
+#### 4. Web: Update `_partition_groups()` to separate plan groups
+- [ ] Update `_partition_groups()` in `server.py` to return `(active, plan, archived)` triple instead of `(active, archived)` pair. Plan groups are those tagged `"plan"` and not `"archive"`.
+- [ ] Update all callers of `_partition_groups()`: `_dashboard_context()`, `_tasks_context()`, `partial_global_progress()`.
+- [ ] Global progress bar should include plan groups in the count (plan tasks are real work).
+- **Done when:** Server correctly partitions groups into three categories. Existing tests still pass.
+
+#### 5. Web: Dashboard plan section grouping
+- [ ] Update `_dashboard_context()` to pass `plan_groups` to the template.
+- [ ] Update `partials/dashboard_content.html` to render plan groups under a collapsible "Implementation Plan" section header with aggregate progress, matching the TUI layout.
+- [ ] Plan section cards show per-section title, status, priority, task progress.
+- [ ] Done plan sections appear dimmed within the plan section (not in archive).
+- [ ] Style to match existing card layout and archive section pattern.
+- **Done when:** Web dashboard shows "Implementation Plan" collapsible section with per-section cards.
+
+#### 6. Web: Tasks page plan section grouping
+- [ ] Update `_tasks_context()` to pass `plan_groups` (and their tasks/trees) separately from active groups.
+- [ ] Update `partials/tasks_content.html` to render plan tasks under section headings within an "Implementation Plan" group, matching TUI task board layout.
+- [ ] Done plan sections dimmed at bottom of the plan group.
+- **Done when:** Web tasks page groups plan tasks by section heading under "Implementation Plan".
+
+#### 7. Web tests: Plan section rendering
+- [ ] Add tests verifying plan groups appear on dashboard as separate cards under plan header.
+- [ ] Add tests verifying plan tasks are grouped by section on the tasks page.
+- [ ] Add tests verifying plan sections are excluded from the archive section.
+- [ ] Add tests verifying global progress bar includes plan task counts.
+- **Done when:** `.venv/bin/pytest` passes with web tests for plan section rendering.
+
+### Priority Order & Dependencies
+
+1. **Task 3** (Core/scanner tests) — validate existing uncommitted code before building on it
+2. **Task 4** (Web partition update) — foundational for web tasks 5-7
+3. **Task 5** (Web dashboard) — depends on task 4
+4. **Task 6** (Web tasks page) — depends on task 4
+5. **Task 7** (Web tests) — after implementation
+
+Tasks 5 and 6 can be done in parallel once task 4 is complete.
+
+---
+
 ## Discovered Issues
 
-- None yet.
+- The uncommitted working tree has 5 files changed implementing core + TUI portions of wiggum plan section parsing. These changes need to be committed (with tests) before continuing with the web side.
+- `_partition_groups()` in `server.py` currently only returns `(active, archived)` — plan groups are mixed into `active`. This means the web dashboard and tasks page lump plan sections with regular specs, unlike the TUI which separates them.
 
 ## Learnings
 
@@ -282,3 +376,4 @@ The spec requires a dedicated history view in both TUI and web showing a timelin
 - Textual's `Static` widget auto-sizes to fit content — for scrollable detail views, use `VerticalScroll` with a `Static` child instead.
 - The scanner already auto-tags archived specs with `"archive"` in their tags, making partitioning straightforward via `"archive" in g.tags`.
 - The watcher must watch both `spec_paths` directories and parent directories of `include` pattern matches — otherwise root-level included files won't trigger live reloads.
+- Plan sections use the `"plan"` tag (auto-applied by scanner) for UI grouping. Done plan sections additionally get `"plan-done"`. These are distinct from `"archive"` — plan sections are not archived specs.

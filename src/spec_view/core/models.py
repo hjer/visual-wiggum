@@ -95,6 +95,34 @@ class Phase:
 
 
 @dataclass
+class PlanSection:
+    """A single JTBD section parsed from a wiggum-format IMPLEMENTATION_PLAN.md."""
+
+    title: str
+    status: Status = Status.DRAFT
+    priority: Priority = Priority.MEDIUM
+    tags: list[str] = field(default_factory=list)
+    tasks: list[Task] = field(default_factory=list)
+    task_tree: list[Task] = field(default_factory=list)
+    body: str = ""
+    source_path: Path = field(default_factory=lambda: Path())
+
+    @property
+    def task_total(self) -> int:
+        return len(self.tasks)
+
+    @property
+    def task_done(self) -> int:
+        return sum(1 for t in self.tasks if t.done)
+
+    @property
+    def task_percent(self) -> int:
+        if self.task_total == 0:
+            return 0
+        return int(self.task_done / self.task_total * 100)
+
+
+@dataclass
 class SpecFile:
     """A parsed spec/design/tasks markdown file."""
 

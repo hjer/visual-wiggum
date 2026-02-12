@@ -96,11 +96,20 @@ class DashboardScreen(Screen):
 
     def _populate_tree(self, tree: SpecTree) -> None:
         """Add spec group nodes to the tree."""
-        active = [g for g in self.groups if "archive" not in g.tags]
+        active = [g for g in self.groups if "archive" not in g.tags and "plan" not in g.tags]
+        plan = [g for g in self.groups if "plan" in g.tags and "archive" not in g.tags]
         archived = [g for g in self.groups if "archive" in g.tags]
 
         for group in active:
             self._add_group_node(tree.root, group)
+
+        if plan:
+            plan_done = sum(g.task_done for g in plan)
+            plan_total = sum(g.task_total for g in plan)
+            plan_label = f"\u25b8 Implementation Plan ({plan_done}/{plan_total})"
+            plan_node = tree.root.add(plan_label)
+            for group in plan:
+                self._add_group_node(plan_node, group)
 
         if archived:
             archive_node = tree.root.add(

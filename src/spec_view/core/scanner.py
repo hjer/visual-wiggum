@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .config import Config
 from .models import SpecFile, SpecGroup
-from .parser import parse_spec_file
+from .parser import _slugify, parse_plan_sections, parse_spec_file
 
 
 def _matches_any(path: Path, patterns: list[str], root: Path) -> bool:
@@ -49,10 +49,51 @@ def _is_spec_path_root(parent: Path, root: Path, config: Config) -> bool:
     return False
 
 
+def _expand_wiggum_sections(
+    spec_file: SpecFile, path: Path
+) -> list[SpecGroup]:
+    """Expand a wiggum-format file into one SpecGroup per plan section."""
+    sections = parse_plan_sections(spec_file.body, path)
+    if not sections:
+        return []
+
+    result: list[SpecGroup] = []
+    for section in sections:
+        slug = _slugify(section.title)
+        tags = list(section.tags)  # already includes "plan"
+        if section.task_total > 0 and section.task_done == section.task_total:
+            if "plan-done" not in tags:
+                tags.append("plan-done")
+
+        virtual_file = SpecFile(
+            path=path,
+            title=section.title,
+            status=section.status,
+            priority=section.priority,
+            tags=tags,
+            content=section.body,
+            body=section.body,
+            tasks=section.tasks,
+            task_tree=section.task_tree,
+            file_type="spec",
+            format_type="wiggum",
+        )
+        group = SpecGroup(
+            name=slug,
+            path=path.parent,
+            files={"spec": virtual_file},
+        )
+        result.append(group)
+
+    return result
+
+
 def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
     """Scan for spec files and group them by directory."""
     files = discover_spec_files(root, config)
     groups: dict[str, SpecGroup] = {}
+    # Preserve insertion order for plan sections
+    plan_groups: list[SpecGroup] = []
 
     for path in files:
         spec_file = parse_spec_file(path)
@@ -61,6 +102,11 @@ def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
         # Auto-tag specs in an archive directory
         if "archive" in path.parts and "archive" not in spec_file.tags:
             spec_file.tags.append("archive")
+
+        # Wiggum-format files get expanded into per-section groups
+        if spec_file.format_type == "wiggum":
+            plan_groups.extend(_expand_wiggum_sections(spec_file, path))
+            continue
 
         # Files directly in a spec_path root (or project root) are standalone.
         # Files in subdirectories of a spec_path are grouped by directory.
@@ -87,4 +133,7 @@ def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
                 )
             groups[group_name].files[spec_file.file_type] = spec_file
 
-    return sorted(groups.values(), key=lambda g: g.name)
+    # Sort non-plan groups alphabetically, then append plan groups in file order
+    sorted_groups = sorted(groups.values(), key=lambda g: g.name)
+    sorted_groups.extend(plan_groups)
+    return sorted_groups

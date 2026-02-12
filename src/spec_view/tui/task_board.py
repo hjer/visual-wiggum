@@ -58,11 +58,14 @@ class TaskBoardScreen(Screen):
 
     def _build_content(self) -> str:
         """Build the full Rich-formatted task board text."""
-        active = [g for g in self.groups if "archive" not in g.tags]
+        active = [g for g in self.groups if "archive" not in g.tags and "plan" not in g.tags]
+        plan = [g for g in self.groups if "plan" in g.tags and "archive" not in g.tags]
         archived = [g for g in self.groups if "archive" in g.tags]
 
         all_flat: list[Task] = []
         for group in active:
+            all_flat.extend(group.all_tasks)
+        for group in plan:
             all_flat.extend(group.all_tasks)
 
         total = len(all_flat)
@@ -72,13 +75,24 @@ class TaskBoardScreen(Screen):
             f"[bold]Task Board[/bold]  ({done_count}/{total} complete)\n",
         ]
 
-        # Check if any active group has phases
-        all_phases: list[Phase] = []
-        for group in active:
-            all_phases.extend(group.all_phases)
-
         for group in active:
             lines.extend(self._render_group_tasks(group))
+
+        if plan:
+            plan_done = sum(g.task_done for g in plan)
+            plan_total = sum(g.task_total for g in plan)
+            lines.append("")
+            lines.append(
+                f"[bold]Implementation Plan[/bold]  ({plan_done}/{plan_total} complete)"
+            )
+            plan_active = [g for g in plan if "plan-done" not in g.tags]
+            plan_completed = [g for g in plan if "plan-done" in g.tags]
+            for group in plan_active:
+                lines.extend(self._render_group_tasks(group))
+            if plan_completed:
+                lines.append(f"  [dim]--- Completed ---[/dim]")
+                for group in plan_completed:
+                    lines.extend(self._render_group_tasks(group, dim=True))
 
         if not all_flat:
             lines.append("[dim]No tasks found in any specs.[/dim]")
