@@ -98,3 +98,33 @@ class TestDetectSpecSources:
 
         detected = detect_spec_sources(tmp_path)
         assert any(d.source == "openspec" for d in detected)
+
+    def test_finds_implementation_plan(self, tmp_path):
+        """IMPLEMENTATION_PLAN.md at project root is auto-detected."""
+        (tmp_path / "IMPLEMENTATION_PLAN.md").write_text("# Plan\n## A\n**Status:** draft\n")
+
+        detected = detect_spec_sources(tmp_path)
+        assert any(d.path == "IMPLEMENTATION_PLAN.md" and d.is_file for d in detected)
+        assert any(d.source == "wiggum" for d in detected)
+
+    def test_finds_implementation_plan_archive(self, tmp_path):
+        (tmp_path / "IMPLEMENTATION_PLAN_ARCHIVE.md").write_text("# Archive\n")
+
+        detected = detect_spec_sources(tmp_path)
+        assert any(d.path == "IMPLEMENTATION_PLAN_ARCHIVE.md" and d.is_file for d in detected)
+
+    def test_finds_plan_alongside_specs(self, tmp_path):
+        """Both specs/ dir and IMPLEMENTATION_PLAN.md are detected."""
+        specs = tmp_path / "specs"
+        specs.mkdir()
+        (specs / "feature.md").write_text("# Feature")
+        (tmp_path / "IMPLEMENTATION_PLAN.md").write_text("# Plan\n")
+
+        detected = detect_spec_sources(tmp_path)
+        assert any(d.path == "specs" and not d.is_file for d in detected)
+        assert any(d.path == "IMPLEMENTATION_PLAN.md" and d.is_file for d in detected)
+
+    def test_no_plan_file_no_detection(self, tmp_path):
+        """Missing IMPLEMENTATION_PLAN.md is not detected."""
+        detected = detect_spec_sources(tmp_path)
+        assert not any(d.path == "IMPLEMENTATION_PLAN.md" for d in detected)

@@ -71,22 +71,14 @@ spec-view auto-detects which tool produced your files:
 | **spec-kit** | `## Phase N:` + `T001` task IDs | Phases, task IDs, parallel markers, story refs, checkpoints |
 | **Kiro** | `.kiro/` in file path | Indentation-based subtask trees |
 | **OpenSpec** | `## 1.` numbered sections | Section structure |
-| **Ralph Wiggum** | `IMPLEMENTATION_PLAN.md` via `include` | Per-JTBD sections with status, tasks, progress |
+| **Ralph Wiggum** | `IMPLEMENTATION_PLAN.md` at project root (auto-detected) | Per-JTBD sections with status, tasks, progress |
 | **Generic** | Fallback | Checkbox tasks with subtask hierarchy |
 
 ### Ralph Wiggum Loop Support
 
 spec-view is built to work with the [Ralph Wiggum loop](https://github.com/hjers/ralph-wiggum) — an iterative, autonomous spec-driven development workflow. The loop writes specs as requirements, tracks tasks in an `IMPLEMENTATION_PLAN.md`, and iterates with fresh context windows.
 
-spec-view tracks the implementation plan alongside your specs, so loop progress is visible in the dashboard. Configure it with:
-
-```yaml
-# .spec-view/config.yaml
-include:
-  - "IMPLEMENTATION_PLAN.md"
-```
-
-The live watcher picks up changes to included files too, so every loop iteration updates the dashboard in real time.
+spec-view automatically detects `IMPLEMENTATION_PLAN.md` at the project root — no configuration needed. Loop progress is visible in the dashboard immediately, and the live watcher updates it in real time as each iteration completes.
 
 ### spec-kit Support
 

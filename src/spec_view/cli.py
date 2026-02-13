@@ -91,8 +91,9 @@ def _prompt_for_paths(root: Path) -> Config | None:
     if detected:
         # This shouldn't happen (auto-detect would have caught it),
         # but handle it gracefully
-        spec_paths = [d.path for d in detected]
-        return Config(spec_paths=spec_paths, auto_detected=True)
+        spec_paths = [d.path for d in detected if not d.is_file]
+        include = [d.path for d in detected if d.is_file]
+        return Config(spec_paths=spec_paths, include=include, auto_detected=True)
 
     console.print("Would you like to:")
     console.print("  [cyan]1[/cyan] Create a specs/ directory with examples (spec-view init)")

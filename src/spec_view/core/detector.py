@@ -14,6 +14,7 @@ class DetectedSource:
     source: str  # What tool/convention it came from
     description: str  # Human-readable description
     md_count: int = 0  # Number of markdown files found
+    is_file: bool = False  # True if this is a single file, not a directory
 
 
 # Directory names that signal spec content.
@@ -37,6 +38,12 @@ SKIP_DIRS = {
     "dist",
     "build",
     ".next",
+}
+
+# Well-known root-level files (wiggum convention).
+KNOWN_ROOT_FILES: dict[str, str] = {
+    "IMPLEMENTATION_PLAN.md": "wiggum",
+    "IMPLEMENTATION_PLAN_ARCHIVE.md": "wiggum",
 }
 
 # Max depth for recursive project scanning (finding marker dirs).
@@ -164,6 +171,20 @@ def detect_spec_sources(root: Path) -> list[DetectedSource]:
                 scan_dir(entry, depth + 1)
 
     scan_dir(root)
+
+    # Check for well-known root-level files (e.g. IMPLEMENTATION_PLAN.md)
+    for filename, source_type in KNOWN_ROOT_FILES.items():
+        filepath = root / filename
+        if filepath.is_file():
+            add(
+                DetectedSource(
+                    path=filename,
+                    source=source_type,
+                    description=f"{filename} (wiggum plan)",
+                    md_count=1,
+                    is_file=True,
+                )
+            )
 
     # Deduplicate: if a parent and child path are both present,
     # keep only the more specific (child) path.

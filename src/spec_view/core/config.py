@@ -70,9 +70,11 @@ def _auto_detect_config(project_root: Path) -> Config:
         # Nothing found - return default (specs/)
         return Config()
 
-    spec_paths = [d.path for d in detected]
+    spec_paths = [d.path for d in detected if not d.is_file]
+    include = [d.path for d in detected if d.is_file]
     return Config(
         spec_paths=spec_paths,
+        include=include,
         auto_detected=True,
     )
 

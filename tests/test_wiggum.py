@@ -605,3 +605,36 @@ class TestScanSpecsWiggum:
         # Plan sections should be in file order, not alphabetical
         assert groups[0].name == "zebra"
         assert groups[1].name == "apple"
+
+    def test_auto_detected_config_includes_plan(self, tmp_path):
+        """IMPLEMENTATION_PLAN.md is found via auto-detection without explicit include."""
+        from spec_view.core.config import load_config
+
+        specs = tmp_path / "specs"
+        specs.mkdir()
+        (specs / "feature.md").write_text(
+            "---\ntitle: Feature\nstatus: ready\n---\n# Feature\n- [ ] Task\n"
+        )
+        plan = tmp_path / "IMPLEMENTATION_PLAN.md"
+        plan.write_text("""\
+# Implementation Plan
+
+## Section A
+
+**Status:** draft
+
+- [ ] Task A
+
+## Section B
+
+**Status:** in-progress
+
+- [ ] Task B
+""")
+        # No .spec-view/config.yaml — relies on auto-detection
+        config = load_config(tmp_path)
+        groups = scan_specs(tmp_path, config)
+        names = [g.name for g in groups]
+        assert "feature" in names
+        assert "section-a" in names
+        assert "section-b" in names

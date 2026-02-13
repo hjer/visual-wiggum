@@ -1,6 +1,6 @@
 """Tests for spec-view config save/load round-trip."""
 
-from spec_view.core.config import Config, ServeConfig, load_config, save_config
+from spec_view.core.config import Config, ServeConfig, load_config, save_config, _auto_detect_config
 
 
 class TestSaveConfigRoundTrip:
@@ -79,3 +79,38 @@ class TestSaveConfigRoundTrip:
         yaml_text = (tmp_path / ".spec-view" / "config.yaml").read_text()
         assert "port: 4000" in yaml_text
         assert "open_browser" not in yaml_text
+
+
+class TestAutoDetectConfig:
+    def test_plan_file_goes_to_include(self, tmp_path):
+        """IMPLEMENTATION_PLAN.md should be auto-detected into include, not spec_paths."""
+        specs = tmp_path / "specs"
+        specs.mkdir()
+        (specs / "feature.md").write_text("# Feature")
+        (tmp_path / "IMPLEMENTATION_PLAN.md").write_text("# Plan\n")
+
+        config = _auto_detect_config(tmp_path)
+        assert "IMPLEMENTATION_PLAN.md" not in config.spec_paths
+        assert "IMPLEMENTATION_PLAN.md" in config.include
+        assert "specs" in config.spec_paths
+
+    def test_plan_and_archive_both_in_include(self, tmp_path):
+        specs = tmp_path / "specs"
+        specs.mkdir()
+        (specs / "feature.md").write_text("# Feature")
+        (tmp_path / "IMPLEMENTATION_PLAN.md").write_text("# Plan\n")
+        (tmp_path / "IMPLEMENTATION_PLAN_ARCHIVE.md").write_text("# Archive\n")
+
+        config = _auto_detect_config(tmp_path)
+        assert "IMPLEMENTATION_PLAN.md" in config.include
+        assert "IMPLEMENTATION_PLAN_ARCHIVE.md" in config.include
+        assert config.auto_detected is True
+
+    def test_no_plan_file_empty_include(self, tmp_path):
+        specs = tmp_path / "specs"
+        specs.mkdir()
+        (specs / "feature.md").write_text("# Feature")
+
+        config = _auto_detect_config(tmp_path)
+        assert config.include == []
+        assert "specs" in config.spec_paths
