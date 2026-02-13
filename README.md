@@ -71,7 +71,7 @@ spec-view auto-detects which tool produced your files:
 | **spec-kit** | `## Phase N:` + `T001` task IDs | Phases, task IDs, parallel markers, story refs, checkpoints |
 | **Kiro** | `.kiro/` in file path | Indentation-based subtask trees |
 | **OpenSpec** | `## 1.` numbered sections | Section structure |
-| **Ralph Wiggum** | `IMPLEMENTATION_PLAN.md` via `include` | Checkbox tasks, gap analysis sections |
+| **Ralph Wiggum** | `IMPLEMENTATION_PLAN.md` via `include` | Per-JTBD sections with status, tasks, progress |
 | **Generic** | Fallback | Checkbox tasks with subtask hierarchy |
 
 ### Ralph Wiggum Loop Support
@@ -125,23 +125,41 @@ Phase 2: US1 - Login Flow (1/3)
 
 The web UI shows the same structure with collapsible phases, progress bars, and colored story tags.
 
+## Dashboard Sections
+
+Both UIs organize specs into collapsible sections:
+
+- **Active** — ungrouped items
+- **Specs** — spec files from your `spec_paths` directories
+- **Implementation Plan** — per-JTBD sections parsed from `IMPLEMENTATION_PLAN.md`
+- **Archive** — completed specs and plan sections, sub-grouped by source
+
+There's also a **History** view showing recent git commits with loop iteration detection and completed task extraction.
+
 ## Live Updates
 
 Both dashboards watch for file changes. Check off a task in your editor — the dashboard updates within a second.
 
 ## Running in a Dev Container
 
-For sandboxed development (especially useful with `claude --dangerously-skip-permissions`):
+Sandboxed environment for running `claude --dangerously-skip-permissions`. The container can only access this repo — no home directory, SSH keys, or other repos. Git push is scoped via a fine-grained GitHub token.
 
 ```bash
 # Prerequisites
 colima start                          # or Docker Desktop
 npm install -g @devcontainers/cli
 
-# Launch Claude in a container
-./run-container.sh
+# Setup (one time)
+cp .devcontainer/.env.example .devcontainer/.env
+# Edit .devcontainer/.env with your GitHub token + git identity
 
-# Run the Wiggum loop in a container
+# Build container
+devcontainer up --workspace-folder .
+
+# First time: login to Claude inside the container
+devcontainer exec --workspace-folder . claude  # then /login
+
+# Run the Wiggum loop
 ./run-container.sh ./loop.sh
 
 # Run any command
