@@ -7,21 +7,28 @@ tags: [meta]
 
 # spec-view development todo
 
-Tracking all in-flight specs and features for the spec-view project.
+## System Specs
 
-## Features
+Living documentation of how spec-view works. Keep current as the system evolves.
 
-- [X] Archive completed plan sections — prompt/config update, no code needed
-- [X] Preserve group headings in archive sections (`specs/archive-group-headings.md`)
+- [x] `specs/parsing.md` — format detection, task extraction, plan sections
+- [x] `specs/scanning.md` — file discovery, grouping, archive tagging
+- [x] `specs/models.md` — data models and computed properties
+- [x] `specs/config.md` — configuration, auto-detection, file watching
+- [x] `specs/tui.md` — terminal UI screens and navigation
+- [x] `specs/web.md` — web UI routes, partials, SSE
+- [x] `specs/history.md` — git history parsing
 
-## Completed
-- [X] Global progress bar in TUI and web UI (`specs/archive/global-progress-bar.md`)
-- [X] Loop history view in TUI and web UI (`specs/archive/loop-history.md`)
-- [X] Wiggum plan section parsing — split IMPLEMENTATION_PLAN.md into per-JTBD sections (`specs/archive/wiggum-plan-sections.md`)
-- [X] Track IMPLEMENTATION_PLAN.md in spec-view (`specs/track-implementation-plan.md`)
-- [X] Add archive function in tui and webui, tag with archive and hide under own many
-- [X] TUI detail pane scrolling with j/k/h vim navigation
-- [X] TUI task board: group tasks under spec headings
-- [X] Watcher: watch include pattern files for live reload
-- [X] TUI keyboard navigation: arrow keys + vim keys, focus stays on tree until leaf selected
-- [X] Remove manual refresh keybinding (file watcher handles it)
+## Completed Features
+
+- [x] Archive completed plan sections — prompt/config update, no code needed
+- [x] Preserve group headings in archive sections
+- [x] Global progress bar in TUI and web UI
+- [x] Loop history view in TUI and web UI
+- [x] Wiggum plan section parsing — split IMPLEMENTATION_PLAN.md into per-JTBD sections
+- [x] Track IMPLEMENTATION_PLAN.md in spec-view
+- [x] Archive function in TUI and web UI
+- [x] TUI detail pane scrolling with vim navigation
+- [x] TUI task board: group tasks under spec headings
+- [x] Watcher: watch include pattern files for live reload
+- [x] TUI keyboard navigation with vim keys
