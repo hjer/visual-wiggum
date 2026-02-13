@@ -1,14 +1,16 @@
 {
   "name": "spec-view",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "build": { "dockerfile": "Dockerfile" },
   "postCreateCommand": "pip install -e '.[dev]'",
   "forwardPorts": [8000],
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "charliermarsh.ruff"
-      ]
-    }
-  }
+  "mounts": [
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
+    "source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind",
+    "source=specview-shell-history,target=/commandhistory,type=volume",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+  },
+  "remoteUser": "vscode"
 }
