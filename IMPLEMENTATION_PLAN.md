@@ -32,11 +32,11 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 
 #### 3. TUI Task Board: Add "Specs" section heading
 
-- [ ] In `task_board.py:_build_content()`, partition active groups into `specs_groups` and `other_active`
-- [ ] Render `other_active` group tasks first (no heading)
-- [ ] Then render `specs_groups` tasks under a "Specs" heading with aggregate count (like "Implementation Plan" heading)
-- [ ] Update archive section: sub-group archived specs under dimmed "Specs" heading (matching dashboard pattern)
-- [ ] Definition of done: Task board shows: active tasks → "Specs" section → "Implementation Plan" section → "Archive" section (sub-grouped)
+- [x] In `task_board.py:_build_content()`, partition active groups into `specs_groups` and `other_active`
+- [x] Render `other_active` group tasks first (no heading)
+- [x] Then render `specs_groups` tasks under a "Specs" heading with aggregate count (like "Implementation Plan" heading)
+- [x] Update archive section: sub-group archived specs under dimmed "Specs" heading (matching dashboard pattern)
+- [x] Definition of done: Task board shows: active tasks → "Specs" section → "Implementation Plan" section → "Archive" section (sub-grouped)
 
 #### 4. Web: Upgrade `_partition_groups()` to return quad
 

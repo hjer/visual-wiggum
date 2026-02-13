@@ -311,6 +311,116 @@ class TestTUITaskBoardArchiveSubgroup:
         assert "Implementation Plan" in content
         assert "Plan A" in content
 
+    def test_archived_specs_under_specs_heading(self):
+        """Archived specs-tagged groups appear under 'Specs' heading in archive section."""
+        groups = [
+            _make_group("archived-spec", "Spec Done", ["specs", "archive"],
+                        tasks=[Task(text="spec task", done=True)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        assert "Archive" in content
+        lines = content.split("\n")
+        specs_lines = [l for l in lines if "Specs" in l and "Task Board" not in l]
+        assert len(specs_lines) >= 1
+        assert "Spec Done" in content
+
+    def test_archived_other_directly_in_archive(self):
+        """Archived groups without plan or specs tags appear directly under archive."""
+        groups = [
+            _make_group("archived-plan", "Plan Done", ["plan", "archive"],
+                        tasks=[Task(text="pt", done=True)]),
+            _make_group("archived-other", "Other Done", ["archive"],
+                        tasks=[Task(text="ot", done=True)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        assert "Archive" in content
+        assert "Implementation Plan" in content
+        assert "Other Done" in content
+        # "Other Done" should NOT be under "Specs" heading since it has no specs tag
+        lines = content.split("\n")
+        specs_heading_lines = [l for l in lines if "Specs" in l and "dim bold" in l]
+        assert len(specs_heading_lines) == 0
+
+
+# ---------------------------------------------------------------------------
+# TUI Task Board — active "Specs" section
+# ---------------------------------------------------------------------------
+
+class TestTUITaskBoardSpecsSection:
+    def test_specs_groups_under_specs_heading(self):
+        """Groups with 'specs' tag appear under 'Specs' heading in task board."""
+        groups = [
+            _make_group("active-item", "Active Item", [], status=Status.READY,
+                        tasks=[Task(text="active task", done=False)]),
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t1", done=True), Task(text="t2", done=False)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        # Active item should be present
+        assert "Active Item" in content
+        # Specs heading should be present with aggregate counts
+        assert "Specs" in content
+        assert "1/2" in content
+        assert "My Spec" in content
+
+    def test_no_specs_heading_when_no_specs_groups(self):
+        """No 'Specs' heading when there are no specs-tagged groups."""
+        groups = [
+            _make_group("active-item", "Active Item", [], status=Status.READY,
+                        tasks=[Task(text="active task", done=False)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        lines = content.split("\n")
+        # Only "Task Board" header should appear, no "Specs" section heading
+        specs_heading_lines = [l for l in lines if l.strip().startswith("[bold]Specs[/bold]")]
+        assert len(specs_heading_lines) == 0
+
+    def test_specs_heading_before_plan_heading(self):
+        """Specs section appears before Implementation Plan section."""
+        groups = [
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t", done=False)]),
+            _make_group("plan-item", "Plan Item", ["plan"], status=Status.IN_PROGRESS,
+                        tasks=[Task(text="t", done=False)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        specs_pos = content.index("[bold]Specs[/bold]")
+        plan_pos = content.index("[bold]Implementation Plan[/bold]")
+        assert specs_pos < plan_pos
+
+    def test_specs_groups_not_in_active_section(self):
+        """Groups with 'specs' tag should NOT appear in the active section (before Specs heading)."""
+        groups = [
+            _make_group("active-item", "Active Item", [], status=Status.READY,
+                        tasks=[Task(text="active task", done=False)]),
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t", done=False)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        # "My Spec" should appear after the "Specs" heading, not before it
+        specs_heading_pos = content.index("[bold]Specs[/bold]")
+        my_spec_pos = content.index("My Spec")
+        assert my_spec_pos > specs_heading_pos
+
+    def test_specs_tasks_included_in_total_count(self):
+        """Specs tasks are included in the top-level task board count."""
+        groups = [
+            _make_group("active-item", "Active Item", [], status=Status.READY,
+                        tasks=[Task(text="t1", done=True)]),
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t2", done=False), Task(text="t3", done=True)]),
+        ]
+        board = TaskBoardScreen(groups)
+        content = board._build_content()
+        # Total should be 3 tasks, 2 done
+        assert "2/3 complete" in content
+
 
 # ---------------------------------------------------------------------------
 # Web Dashboard — archive sub-grouping

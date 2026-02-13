@@ -53,12 +53,15 @@ class TaskBoardScreen(Screen):
 
     def _build_content(self) -> str:
         """Build the full Rich-formatted task board text."""
-        active = [g for g in self.groups if "archive" not in g.tags and "plan" not in g.tags]
+        other_active = [g for g in self.groups if "archive" not in g.tags and "plan" not in g.tags and "specs" not in g.tags]
+        specs_groups = [g for g in self.groups if "specs" in g.tags and "archive" not in g.tags]
         plan = [g for g in self.groups if "plan" in g.tags and "archive" not in g.tags]
         archived = [g for g in self.groups if "archive" in g.tags]
 
         all_flat: list[Task] = []
-        for group in active:
+        for group in other_active:
+            all_flat.extend(group.all_tasks)
+        for group in specs_groups:
             all_flat.extend(group.all_tasks)
         for group in plan:
             all_flat.extend(group.all_tasks)
@@ -70,8 +73,18 @@ class TaskBoardScreen(Screen):
             f"[bold]Task Board[/bold]  ({done_count}/{total} complete)\n",
         ]
 
-        for group in active:
+        for group in other_active:
             lines.extend(self._render_group_tasks(group))
+
+        if specs_groups:
+            specs_done = sum(g.task_done for g in specs_groups)
+            specs_total = sum(g.task_total for g in specs_groups)
+            lines.append("")
+            lines.append(
+                f"[bold]Specs[/bold]  ({specs_done}/{specs_total} complete)"
+            )
+            for group in specs_groups:
+                lines.extend(self._render_group_tasks(group))
 
         if plan:
             plan_done = sum(g.task_done for g in plan)
@@ -96,7 +109,8 @@ class TaskBoardScreen(Screen):
                 f"[dim bold]Archive[/dim bold]  [dim]({archived_done}/{len(archived_tasks)} complete)[/dim]"
             )
             archived_plan = [g for g in archived if "plan" in g.tags]
-            archived_specs = [g for g in archived if "plan" not in g.tags]
+            archived_specs = [g for g in archived if "specs" in g.tags and "plan" not in g.tags]
+            archived_other = [g for g in archived if "plan" not in g.tags and "specs" not in g.tags]
             if archived_plan:
                 ap_done = sum(g.task_done for g in archived_plan)
                 ap_total = sum(g.task_total for g in archived_plan)
@@ -105,7 +119,15 @@ class TaskBoardScreen(Screen):
                 )
                 for group in archived_plan:
                     lines.extend(self._render_group_tasks(group, dim=True))
-            for group in archived_specs:
+            if archived_specs:
+                as_done = sum(g.task_done for g in archived_specs)
+                as_total = sum(g.task_total for g in archived_specs)
+                lines.append(
+                    f"  [dim bold]Specs[/dim bold]  [dim]({as_done}/{as_total} complete)[/dim]"
+                )
+                for group in archived_specs:
+                    lines.extend(self._render_group_tasks(group, dim=True))
+            for group in archived_other:
                 lines.extend(self._render_group_tasks(group, dim=True))
 
         return "\n".join(lines)
