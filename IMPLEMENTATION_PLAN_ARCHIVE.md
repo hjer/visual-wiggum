@@ -4,6 +4,19 @@
 
 ---
 
+## Config: Persist `serve` and `statuses` Settings — DONE
+
+**Status:** done | **Priority:** low | **Tags:** core
+
+`save_config()` only persisted `spec_paths`/`include`/`exclude`, dropping custom `serve` (port, open_browser) and `statuses` on save. Fixed to include non-default serve and statuses fields in YAML output. Only changed fields are written (e.g., custom port without open_browser).
+
+- [x] In `config.py:save_config()`, include `serve` section (port, open_browser) in YAML output when values differ from defaults
+- [x] In `config.py:save_config()`, include `statuses` in YAML output when values differ from defaults
+- [x] Add tests: save config with custom serve port → reload → port preserved; save with custom statuses → reload → statuses preserved (6 tests in `test_config.py`)
+- [x] Definition of done: `save_config()` round-trips all config fields, not just `spec_paths`/`include`/`exclude`
+
+---
+
 ## Preserve Group Headings in Archive Sections (`specs/archive/archive-group-headings.md`) — DONE
 
 **Status:** done | **Priority:** medium | **Tags:** tui, web, ux, archive

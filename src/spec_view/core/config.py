@@ -91,6 +91,19 @@ def save_config(project_root: Path, config: Config) -> Path:
     if config.exclude != ["**/node_modules/**", "**/.git/**"]:
         data["exclude"] = config.exclude
 
+    default_serve = ServeConfig()
+    if config.serve.port != default_serve.port or config.serve.open_browser != default_serve.open_browser:
+        serve_data: dict = {}
+        if config.serve.port != default_serve.port:
+            serve_data["port"] = config.serve.port
+        if config.serve.open_browser != default_serve.open_browser:
+            serve_data["open_browser"] = config.serve.open_browser
+        data["serve"] = serve_data
+
+    default_statuses = ["draft", "ready", "in-progress", "done", "blocked"]
+    if config.statuses != default_statuses:
+        data["statuses"] = config.statuses
+
     with open(config_path, "w") as f:
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 

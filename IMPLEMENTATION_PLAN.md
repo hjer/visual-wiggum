@@ -5,17 +5,6 @@
 
 ---
 
-## Config: Persist `serve` and `statuses` Settings
-
-**Status:** pending | **Priority:** low | **Tags:** core
-
-`specs/config.md` defines `serve` (port, open_browser) and `statuses` as config fields. `config.py` loads them correctly from YAML, but `save_config()` (lines 86-95) never writes them back. Custom serve settings and status definitions are lost on config save.
-
-- [ ] In `config.py:save_config()`, include `serve` section (port, open_browser) in YAML output when values differ from defaults
-- [ ] In `config.py:save_config()`, include `statuses` in YAML output when values differ from defaults
-- [ ] Add tests: save config with custom serve port → reload → port preserved; save with custom statuses → reload → statuses preserved
-- [ ] Definition of done: `save_config()` round-trips all config fields, not just `spec_paths`/`include`/`exclude`
-
 ---
 
 ## Web Archive: Add "Other" Sub-group Category
