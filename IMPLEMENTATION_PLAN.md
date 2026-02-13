@@ -15,10 +15,10 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 
 #### 1. Scanner: Apply "specs" tag to spec_paths groups
 
-- [ ] In `scanner.py:scan_specs()`, after grouping is complete, iterate sorted non-plan groups and tag any group whose `path` is under a configured `spec_paths` directory (and not already tagged `"archive"`) with `"specs"`
-- [ ] The tag must NOT be applied to wiggum-format expanded groups (they get `"plan"`)
-- [ ] Add tests in `test_scanner.py`: groups from `specs/` get `"specs"` tag; groups from `specs/archive/` get `"archive"` but NOT `"specs"`; standalone `include` files do NOT get `"specs"` tag; wiggum files do NOT get `"specs"` tag
-- [ ] Definition of done: `scan_specs()` returns groups where spec-path files carry `"specs"` in their tags, all existing tests still pass
+- [x] In `scanner.py:scan_specs()`, after grouping is complete, iterate sorted non-plan groups and tag any group whose `path` is under a configured `spec_paths` directory (and not already tagged `"archive"`) with `"specs"`
+- [x] The tag must NOT be applied to wiggum-format expanded groups (they get `"plan"`)
+- [x] Add tests in `test_scanner.py`: groups from `specs/` get `"specs"` tag; groups from `specs/archive/` get `"archive"` but NOT `"specs"`; standalone `include` files do NOT get `"specs"` tag; wiggum files do NOT get `"specs"` tag
+- [x] Definition of done: `scan_specs()` returns groups where spec-path files carry `"specs"` in their tags, all existing tests still pass
 
 #### 2. TUI Dashboard: Add collapsible "Specs" section node
 
@@ -72,13 +72,11 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 
 ## TUI: Add Missing `r` Refresh Keybinding
 
-**Status:** pending | **Priority:** medium | **Tags:** tui
+**Status:** pending | **Priority:** low | **Tags:** tui
 
-The spec (`specs/tui.md` lines 12-18) requires app-level keybinding `r` for refresh. The `action_refresh()` method already exists in `app.py:83` and works correctly, but the `r` binding is missing from the `BINDINGS` list at `app.py:29-34`.
+The spec (`specs/tui.md` lines 12-18) requires app-level keybinding `r` for refresh. The `action_refresh()` method already exists in `app.py:83` and works correctly, but the `r` binding is missing from the `BINDINGS` list at `app.py:29-34`. If it's done automaticcally, should we remove the key binding? 
 
-- [ ] Add `Binding("r", "action_refresh", "Refresh", show=True)` to `SpecViewApp.BINDINGS` in `app.py`
-- [ ] Verify existing `action_refresh()` at line 83 triggers correctly when `r` is pressed
-- [ ] Definition of done: Pressing `r` in any TUI screen triggers a spec rescan and UI update
+- [ ] remove key binding, since updated automatically 
 
 ---
 

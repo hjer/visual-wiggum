@@ -49,6 +49,18 @@ def _is_spec_path_root(parent: Path, root: Path, config: Config) -> bool:
     return False
 
 
+def _is_under_spec_path(group_path: Path, root: Path, config: Config) -> bool:
+    """Check if a group's path is under any configured spec_paths directory."""
+    for spec_path_str in config.spec_paths:
+        spec_dir = (root / spec_path_str).resolve()
+        try:
+            group_path.resolve().relative_to(spec_dir)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
 def _expand_wiggum_sections(
     spec_file: SpecFile, path: Path
 ) -> list[SpecGroup]:
@@ -132,6 +144,14 @@ def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
                     path=parent,
                 )
             groups[group_name].files[spec_file.file_type] = spec_file
+
+    # Auto-tag spec_paths groups with "specs" (not archive, not wiggum/plan)
+    for group in groups.values():
+        if _is_under_spec_path(group.path, root, config):
+            if "archive" not in group.tags:
+                for f in group.files.values():
+                    if "specs" not in f.tags:
+                        f.tags.append("specs")
 
     # Sort non-plan groups alphabetically, then append plan groups in file order
     sorted_groups = sorted(groups.values(), key=lambda g: g.name)
