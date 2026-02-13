@@ -89,12 +89,21 @@ class DashboardScreen(Screen):
 
     def _populate_tree(self, tree: SpecTree) -> None:
         """Add spec group nodes to the tree."""
-        active = [g for g in self.groups if "archive" not in g.tags and "plan" not in g.tags]
+        other_active = [g for g in self.groups if "archive" not in g.tags and "plan" not in g.tags and "specs" not in g.tags]
+        specs_groups = [g for g in self.groups if "specs" in g.tags and "archive" not in g.tags]
         plan = [g for g in self.groups if "plan" in g.tags and "archive" not in g.tags]
         archived = [g for g in self.groups if "archive" in g.tags]
 
-        for group in active:
+        for group in other_active:
             self._add_group_node(tree.root, group)
+
+        if specs_groups:
+            specs_done = sum(g.task_done for g in specs_groups)
+            specs_total = sum(g.task_total for g in specs_groups)
+            specs_label = f"\u25b8 Specs ({specs_done}/{specs_total})"
+            specs_node = tree.root.add(specs_label)
+            for group in specs_groups:
+                self._add_group_node(specs_node, group)
 
         if plan:
             plan_done = sum(g.task_done for g in plan)
@@ -109,7 +118,8 @@ class DashboardScreen(Screen):
                 f"[dim]\u25b8 Archive ({len(archived)})[/dim]"
             )
             archived_plan = [g for g in archived if "plan" in g.tags]
-            archived_specs = [g for g in archived if "plan" not in g.tags]
+            archived_specs = [g for g in archived if "specs" in g.tags and "plan" not in g.tags]
+            archived_other = [g for g in archived if "plan" not in g.tags and "specs" not in g.tags]
             if archived_plan:
                 ap_done = sum(g.task_done for g in archived_plan)
                 ap_total = sum(g.task_total for g in archived_plan)
@@ -118,7 +128,15 @@ class DashboardScreen(Screen):
                 )
                 for group in archived_plan:
                     self._add_group_node(plan_sub, group)
-            for group in archived_specs:
+            if archived_specs:
+                as_done = sum(g.task_done for g in archived_specs)
+                as_total = sum(g.task_total for g in archived_specs)
+                specs_sub = archive_node.add(
+                    f"[dim]\u25b8 Specs ({as_done}/{as_total})[/dim]"
+                )
+                for group in archived_specs:
+                    self._add_group_node(specs_sub, group)
+            for group in archived_other:
                 self._add_group_node(archive_node, group)
             archive_node.collapse()
 

@@ -72,11 +72,12 @@ class TestTUIDashboardArchiveSubgroup:
         assert len(plan_sub) == 1
         assert "1/1" in plan_sub[0]  # aggregate counts
 
-    def test_archived_specs_directly_under_archive(self):
-        """Archived spec groups appear directly under Archive, not under a sub-heading."""
+    def test_archived_specs_under_specs_subnode(self):
+        """Archived spec groups with 'specs' tag appear under 'Specs' sub-node within Archive."""
         groups = [
             _make_group("archived-plan", "Plan Done", ["plan", "archive"]),
-            _make_group("archived-spec", "Spec Done", ["archive"]),
+            _make_group("archived-spec", "Spec Done", ["specs", "archive"],
+                        tasks=[Task(text="t", done=True)]),
         ]
         screen = DashboardScreen(groups, Path("/tmp"))
         from spec_view.tui.dashboard import SpecTree
@@ -91,16 +92,41 @@ class TestTUIDashboardArchiveSubgroup:
                 break
         assert archive_node is not None
 
-        # Archive should have: "Implementation Plan" sub-node + "Spec Done" group node
+        # Archive should have: "Implementation Plan" sub-node + "Specs" sub-node
         direct_labels = [str(child.label) for child in archive_node.children]
-        # "Spec Done" should be a direct child (not inside plan sub-node)
-        spec_labels = [l for l in direct_labels if "Spec Done" in l]
-        assert len(spec_labels) == 1
+        specs_labels = [l for l in direct_labels if "Specs" in l and "Implementation" not in l]
+        assert len(specs_labels) == 1
+        assert "1/1" in specs_labels[0]  # aggregate counts
+
+    def test_archived_other_directly_under_archive(self):
+        """Archived groups without 'plan' or 'specs' tags appear directly under Archive."""
+        groups = [
+            _make_group("archived-plan", "Plan Done", ["plan", "archive"]),
+            _make_group("archived-other", "Other Done", ["archive"],
+                        tasks=[Task(text="t", done=True)]),
+        ]
+        screen = DashboardScreen(groups, Path("/tmp"))
+        from spec_view.tui.dashboard import SpecTree
+        tree = SpecTree("Specs")
+        tree.show_root = False
+        screen._populate_tree(tree)
+
+        archive_node = None
+        for child in tree.root.children:
+            if "Archive" in str(child.label):
+                archive_node = child
+                break
+        assert archive_node is not None
+
+        # Archive should have: "Implementation Plan" sub-node + "Other Done" group node
+        direct_labels = [str(child.label) for child in archive_node.children]
+        other_labels = [l for l in direct_labels if "Other Done" in l]
+        assert len(other_labels) == 1
 
     def test_no_plan_subnode_when_only_archived_specs(self):
         """No 'Implementation Plan' sub-node when there are no archived plan groups."""
         groups = [
-            _make_group("archived-spec", "Spec Done", ["archive"]),
+            _make_group("archived-spec", "Spec Done", ["specs", "archive"]),
         ]
         screen = DashboardScreen(groups, Path("/tmp"))
         from spec_view.tui.dashboard import SpecTree
@@ -118,6 +144,9 @@ class TestTUIDashboardArchiveSubgroup:
         sub_labels = [str(child.label) for child in archive_node.children]
         plan_sub = [l for l in sub_labels if "Implementation Plan" in l]
         assert len(plan_sub) == 0
+        # Should have a "Specs" sub-node though
+        specs_sub = [l for l in sub_labels if "Specs" in l]
+        assert len(specs_sub) == 1
 
     def test_only_archived_plan_no_bare_items(self):
         """When only archived plan groups exist, all appear under plan sub-node."""
@@ -142,6 +171,91 @@ class TestTUIDashboardArchiveSubgroup:
         assert len(archive_node.children) == 1
         assert "Implementation Plan" in str(archive_node.children[0].label)
         assert "3/3" in str(archive_node.children[0].label)
+
+
+# ---------------------------------------------------------------------------
+# TUI Dashboard — active "Specs" section
+# ---------------------------------------------------------------------------
+
+class TestTUIDashboardSpecsSection:
+    def test_specs_groups_under_specs_node(self):
+        """Groups with 'specs' tag appear under collapsible 'Specs' node."""
+        groups = [
+            _make_group("active-item", "Active Item", [], status=Status.READY,
+                        tasks=[Task(text="t", done=False)]),
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t1", done=True), Task(text="t2", done=False)]),
+        ]
+        screen = DashboardScreen(groups, Path("/tmp"))
+        from spec_view.tui.dashboard import SpecTree
+        tree = SpecTree("Specs")
+        tree.show_root = False
+        screen._populate_tree(tree)
+
+        root_labels = [str(child.label) for child in tree.root.children]
+        # Should have "Active Item" at root and a "Specs" node
+        active_labels = [l for l in root_labels if "Active Item" in l]
+        specs_labels = [l for l in root_labels if l.startswith("\u25b8 Specs")]
+        assert len(active_labels) == 1
+        assert len(specs_labels) == 1
+        assert "1/2" in specs_labels[0]
+
+    def test_no_specs_node_when_no_specs_groups(self):
+        """No 'Specs' node when there are no specs-tagged groups."""
+        groups = [
+            _make_group("active-item", "Active Item", [], status=Status.READY,
+                        tasks=[Task(text="t", done=False)]),
+        ]
+        screen = DashboardScreen(groups, Path("/tmp"))
+        from spec_view.tui.dashboard import SpecTree
+        tree = SpecTree("Specs")
+        tree.show_root = False
+        screen._populate_tree(tree)
+
+        root_labels = [str(child.label) for child in tree.root.children]
+        specs_labels = [l for l in root_labels if "Specs" in l and "Implementation" not in l]
+        assert len(specs_labels) == 0
+
+    def test_specs_node_before_plan_node(self):
+        """Specs node appears before Implementation Plan node in tree."""
+        groups = [
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t", done=False)]),
+            _make_group("plan-item", "Plan Item", ["plan"], status=Status.IN_PROGRESS,
+                        tasks=[Task(text="t", done=False)]),
+        ]
+        screen = DashboardScreen(groups, Path("/tmp"))
+        from spec_view.tui.dashboard import SpecTree
+        tree = SpecTree("Specs")
+        tree.show_root = False
+        screen._populate_tree(tree)
+
+        root_labels = [str(child.label) for child in tree.root.children]
+        specs_idx = next(i for i, l in enumerate(root_labels) if "Specs" in l and "Implementation" not in l)
+        plan_idx = next(i for i, l in enumerate(root_labels) if "Implementation Plan" in l)
+        assert specs_idx < plan_idx
+
+    def test_specs_groups_not_in_active_root(self):
+        """Groups with 'specs' tag should NOT appear at tree root as active items."""
+        groups = [
+            _make_group("my-spec", "My Spec", ["specs"], status=Status.READY,
+                        tasks=[Task(text="t", done=False)]),
+        ]
+        screen = DashboardScreen(groups, Path("/tmp"))
+        from spec_view.tui.dashboard import SpecTree
+        tree = SpecTree("Specs")
+        tree.show_root = False
+        screen._populate_tree(tree)
+
+        root_labels = [str(child.label) for child in tree.root.children]
+        # "My Spec" should only be under the "Specs" node, not at root
+        direct_spec = [l for l in root_labels if "My Spec" in l]
+        assert len(direct_spec) == 0
+        # Should be inside the Specs node
+        specs_node = [c for c in tree.root.children if "Specs" in str(c.label) and "Implementation" not in str(c.label)][0]
+        child_labels = [str(c.label) for c in specs_node.children]
+        spec_in_node = [l for l in child_labels if "My Spec" in l]
+        assert len(spec_in_node) == 1
 
 
 # ---------------------------------------------------------------------------

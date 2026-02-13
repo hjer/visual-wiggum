@@ -22,13 +22,13 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 
 #### 2. TUI Dashboard: Add collapsible "Specs" section node
 
-- [ ] In `dashboard.py:_populate_tree()`, partition active groups into `specs_groups` (`"specs" in g.tags`) and `other_active` (everything else)
-- [ ] Render `other_active` groups at tree root (existing behavior for truly ungrouped items)
-- [ ] Add collapsible "Specs" node (like "Implementation Plan") with aggregate `(done/total)` count, containing `specs_groups` alphabetically
-- [ ] Only show "Specs" node if `specs_groups` is non-empty
-- [ ] Update archive sub-grouping: archived specs (`"specs" in g.tags and "archive" in g.tags`) should appear under dimmed "Specs" heading within Archive, not listed directly
-- [ ] Add/update tests in `test_archive_subgroups.py` for the new "Specs" sub-group within Archive
-- [ ] Definition of done: TUI tree shows Active items → Specs (collapsible) → Implementation Plan (collapsible) → Archive (collapsed, sub-grouped with plan/specs/other)
+- [x] In `dashboard.py:_populate_tree()`, partition active groups into `specs_groups` (`"specs" in g.tags`) and `other_active` (everything else)
+- [x] Render `other_active` groups at tree root (existing behavior for truly ungrouped items)
+- [x] Add collapsible "Specs" node (like "Implementation Plan") with aggregate `(done/total)` count, containing `specs_groups` alphabetically
+- [x] Only show "Specs" node if `specs_groups` is non-empty
+- [x] Update archive sub-grouping: archived specs (`"specs" in g.tags and "archive" in g.tags`) should appear under dimmed "Specs" heading within Archive, not listed directly
+- [x] Add/update tests in `test_archive_subgroups.py` for the new "Specs" sub-group within Archive
+- [x] Definition of done: TUI tree shows Active items → Specs (collapsible) → Implementation Plan (collapsible) → Archive (collapsed, sub-grouped with plan/specs/other)
 
 #### 3. TUI Task Board: Add "Specs" section heading
 
