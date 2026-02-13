@@ -25,4 +25,4 @@ Implement the selected task:
 - Don't modify `specs/` — those are the requirements, not your output.
 - Keep `AGENTS.md` concise. Progress notes go in `IMPLEMENTATION_PLAN.md`.
 - If a task is blocked or too large, note it in the plan and move to the next one.
-- When all tasks in a JTBD section are complete, move the entire `## ` section from `IMPLEMENTATION_PLAN.md` to `IMPLEMENTATION_PLAN_ARCHIVE.md`. Add `archive` to its `**Tags:**` line (e.g. `**Tags:** core, ux, archive`). This keeps the active plan clean and prevents done work from being lost when the plan is regenerated.
+- Move completed tasks from `IMPLEMENTATION_PLAN.md` to `IMPLEMENTATION_PLAN_ARCHIVE.md` to keep the active plan clean. Only move individual done tasks — plan sections stay until all their tasks are complete.
