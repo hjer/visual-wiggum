@@ -165,3 +165,104 @@ async def test_no_specs_section_without_spec_paths(tmp_path):
     assert "Specs (" not in html
     # Plan section should still appear
     assert "Implementation Plan" in html
+
+
+# --- Tasks page tests ---
+
+
+@pytest.mark.asyncio
+async def test_tasks_page_shows_specs_section(_setup):
+    """Tasks page renders a collapsible 'Specs' section with spec-tagged groups."""
+    tmp_path = _setup
+    app = create_app(tmp_path, _make_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/tasks")
+    assert resp.status_code == 200
+    html = resp.text
+    assert "specs-section" in html
+    assert "Specs (" in html
+    assert "Scanning Spec" in html
+    assert "Models Spec" in html
+
+
+@pytest.mark.asyncio
+async def test_tasks_page_specs_section_aggregate_progress(_setup):
+    """Tasks page specs section header shows aggregate task count."""
+    tmp_path = _setup
+    app = create_app(tmp_path, _make_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    # Scanning: 1/2, Models: 0/1 => total 1/3
+    assert "Specs (1/3 tasks)" in html
+
+
+@pytest.mark.asyncio
+async def test_tasks_page_specs_before_plan(_setup):
+    """Specs section appears before Implementation Plan on tasks page."""
+    tmp_path = _setup
+    app = create_app(tmp_path, _make_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    specs_pos = html.find("specs-section")
+    plan_pos = html.find("plan-section")
+    assert specs_pos > -1, "Specs section not found"
+    assert plan_pos > -1, "Plan section not found"
+    assert specs_pos < plan_pos
+
+
+@pytest.mark.asyncio
+async def test_tasks_page_specs_group_headings(_setup):
+    """Tasks page specs section shows per-group headings with counts."""
+    tmp_path = _setup
+    app = create_app(tmp_path, _make_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    assert "Scanning Spec" in html
+    assert "Models Spec" in html
+    # Check group-level counts appear
+    assert "1/2" in html  # Scanning Spec
+    assert "0/1" in html  # Models Spec
+
+
+@pytest.mark.asyncio
+async def test_tasks_page_archive_specs_sub_heading(_setup_with_archive):
+    """Tasks page archive section shows 'Specs' sub-heading for archived spec groups."""
+    tmp_path = _setup_with_archive
+    app = create_app(tmp_path, _make_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    assert "archive-section" in html
+    assert "archive-sub-heading" in html
+    assert "Old Spec" in html
+
+
+@pytest.mark.asyncio
+async def test_tasks_page_no_specs_section_without_spec_paths(tmp_path):
+    """Tasks page doesn't show Specs section when no spec_paths groups exist."""
+    (tmp_path / "IMPLEMENTATION_PLAN.md").write_text(
+        "# Implementation Plan\n\n---\n\n"
+        "## Feature\n\n"
+        "**Status:** in-progress | **Priority:** high | **Tags:** core\n\n"
+        "- [ ] Task\n\n---\n\n"
+        "## Feature 2\n\n"
+        "**Status:** in-progress | **Priority:** medium | **Tags:** web\n\n"
+        "- [ ] Task 2\n"
+    )
+    config = Config(spec_paths=[], include=["IMPLEMENTATION_PLAN.md"])
+    app = create_app(tmp_path, config)
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    assert "specs-section" not in html
+    # Plan section should still appear
+    assert "plan-section" in html

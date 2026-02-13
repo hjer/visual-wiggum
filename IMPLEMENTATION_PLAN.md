@@ -57,11 +57,11 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 
 #### 6. Web Tasks Template: Add "Specs" section
 
-- [ ] In `partials/tasks_content.html`, add a "Specs" section between active tasks and "Implementation Plan"
-- [ ] Show specs-tagged group tasks under "Specs" heading with aggregate count
-- [ ] Update archive section to sub-group archived specs (matching dashboard pattern)
-- [ ] Add tests for specs section presence in web tasks page
-- [ ] Definition of done: Web tasks page shows Active tasks → Specs section → Plan section → Archive section (sub-grouped)
+- [x] In `partials/tasks_content.html`, add a "Specs" section between active tasks and "Implementation Plan"
+- [x] Show specs-tagged group tasks under "Specs" heading with aggregate count
+- [x] Update archive section to sub-group archived specs (matching dashboard pattern)
+- [x] Add tests for specs section presence in web tasks page
+- [x] Definition of done: Web tasks page shows Active tasks → Specs section → Plan section → Archive section (sub-grouped)
 
 #### 7. Progress Bar: Verify correct counting
 

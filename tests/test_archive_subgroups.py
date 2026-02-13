@@ -542,6 +542,8 @@ async def test_web_tasks_archive_no_plan_subheading_without_plan(tmp_path):
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/partials/tasks-content")
     html = resp.text
-    # Archive should exist (there's an archived spec)
+    # Archive should exist (there's an archived spec) with Specs sub-heading
     assert "archive-section" in html
-    assert "archive-sub-heading" not in html
+    assert "Specs (" in html
+    # No Implementation Plan sub-heading since there are no archived plan groups
+    assert ">Implementation Plan" not in html

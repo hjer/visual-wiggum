@@ -90,6 +90,39 @@
 </div>
 {% endif %}
 
+{% if specs_groups %}
+{% set specs_total_tasks = specs_tasks | length %}
+{% set specs_done_tasks = specs_tasks | selectattr('done') | list | length %}
+<div class="specs-section collapsed" style="margin-top: 2rem;">
+    <div class="plan-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <span class="plan-arrow">&#x25b8;</span> Specs ({{ specs_done_tasks }}/{{ specs_total_tasks }} tasks)
+    </div>
+    <div class="task-list">
+        {% macro render_specs_tasks(tasks, depth) %}
+        {% for task in tasks %}
+        <div class="task-item {% if task.done %}done{% endif %} depth-{{ depth }}">
+            <span class="task-check">{% if task.done %}&#x2713;{% else %}&#x25cb;{% endif %}</span>
+            <span class="task-text">
+                {{ task.text }}
+                {% if task.children %}<span class="subtask-count">{{ task.subtask_done }}/{{ task.subtask_total }}</span>{% endif %}
+            </span>
+        </div>
+        {% if task.children %}
+        {{ render_specs_tasks(task.children, depth + 1) }}
+        {% endif %}
+        {% endfor %}
+        {% endmacro %}
+        {% for group in specs_groups %}
+        <div class="plan-group-heading">
+            <span class="plan-group-title">{{ group.title }}</span>
+            <span class="plan-group-count">{{ group.task_done }}/{{ group.task_total }}</span>
+        </div>
+        {{ render_specs_tasks(group.all_task_trees, 0) }}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% if plan_groups %}
 {% set plan_total_tasks = plan_tasks | length %}
 {% set plan_done_tasks = plan_tasks | selectattr('done') | list | length %}
@@ -157,6 +190,10 @@
         {{ render_archived_tasks(group.all_task_trees, 0) }}
         {% endfor %}
         {% endif %}
+        {% if archived_spec_groups %}
+        {% set as_done = archived_spec_groups | sum(attribute='task_done') %}
+        {% set as_total = archived_spec_groups | sum(attribute='task_total') %}
+        <div class="archive-sub-heading">Specs ({{ as_done }}/{{ as_total }})</div>
         {% for group in archived_spec_groups %}
         <div class="plan-group-heading">
             <span class="plan-group-title">{{ group.title }}</span>
@@ -164,6 +201,7 @@
         </div>
         {{ render_archived_tasks(group.all_task_trees, 0) }}
         {% endfor %}
+        {% endif %}
     </div>
 </div>
 {% endif %}
