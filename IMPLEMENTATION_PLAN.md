@@ -40,12 +40,12 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 
 #### 4. Web: Upgrade `_partition_groups()` to return quad
 
-- [ ] In `server.py`, change `_partition_groups()` return type to `tuple[list, list, list, list]` returning `(active, specs, plan, archived)` where `specs` = has `"specs"` tag, no `"archive"` tag; `active` = no `"archive"`, `"specs"`, or `"plan"` tags
-- [ ] Update `_dashboard_context()` to unpack quad and pass `specs_groups` to template
-- [ ] Update `_tasks_context()` to unpack quad and pass `specs_groups`/`specs_task_trees`/`specs_phases` to template
-- [ ] Update `_global_progress_context()` to include specs groups in counted total
-- [ ] Update all existing web tests (`test_web_plan.py`, `test_web_progress.py`) for the new quad structure
-- [ ] Definition of done: `_partition_groups()` returns 4-tuple, all endpoints pass correct data to templates, existing tests updated and passing
+- [x] In `server.py`, change `_partition_groups()` return type to `tuple[list, list, list, list]` returning `(active, specs, plan, archived)` where `specs` = has `"specs"` tag, no `"archive"` tag; `active` = no `"archive"`, `"specs"`, or `"plan"` tags
+- [x] Update `_dashboard_context()` to unpack quad and pass `specs_groups` to template
+- [x] Update `_tasks_context()` to unpack quad and pass `specs_groups`/`specs_task_trees`/`specs_phases` to template
+- [x] Update `_global_progress_context()` to include specs groups in counted total
+- [x] Update all existing web tests (`test_web_plan.py`, `test_web_progress.py`) for the new quad structure — all 204 tests pass without changes needed since scanner already tags spec_paths groups with "specs" and templates don't reference specs_groups yet (Task 5)
+- [x] Definition of done: `_partition_groups()` returns 4-tuple, all endpoints pass correct data to templates, existing tests updated and passing
 
 #### 5. Web Dashboard Template: Add collapsible "Specs" section
 
@@ -133,3 +133,4 @@ The spec (`specs/tui.md` lines 12-18) requires app-level keybinding `r` for refr
 - The "specs" tag is the missing piece that connects scanner output to UI grouping. Without it, all spec-path files appear as generic active items. The tag must be applied at the scanner level (after grouping, before return) so all UIs can partition consistently.
 - The `r` keybinding gap is trivial — `action_refresh()` already exists and works; only the binding declaration is missing.
 - The undefined `slash`/`focus_search` binding in dashboard.py is dead code that could cause runtime errors — safe to remove since the spec doesn't define search.
+- The quad partition in `_partition_groups()` was a clean addition — `"specs"` tagged groups were previously mixed into `active`, and the existing tests passed without changes because the scanner was already tagging correctly. The `_tasks_context()` now also computes `archived_other_groups` for items with neither `"plan"` nor `"specs"` tags, preparing for the "Other" archive sub-group.

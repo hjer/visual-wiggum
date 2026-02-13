@@ -75,16 +75,20 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     def _partition_groups(
         groups: list[SpecGroup],
-    ) -> tuple[list[SpecGroup], list[SpecGroup], list[SpecGroup]]:
-        active = [g for g in groups if "archive" not in g.tags and "plan" not in g.tags]
+    ) -> tuple[list[SpecGroup], list[SpecGroup], list[SpecGroup], list[SpecGroup]]:
+        active = [
+            g for g in groups
+            if "archive" not in g.tags and "plan" not in g.tags and "specs" not in g.tags
+        ]
+        specs = [g for g in groups if "specs" in g.tags and "archive" not in g.tags]
         plan = [g for g in groups if "plan" in g.tags and "archive" not in g.tags]
         archived = [g for g in groups if "archive" in g.tags]
-        return active, plan, archived
+        return active, specs, plan, archived
 
     def _dashboard_context() -> dict:
         groups = _get_groups()
-        active, plan, archived = _partition_groups(groups)
-        all_counted = active + plan
+        active, specs, plan, archived = _partition_groups(groups)
+        all_counted = active + specs + plan
         total_tasks = sum(g.task_total for g in all_counted)
         done_tasks = sum(g.task_done for g in all_counted)
         overall_percent = int(done_tasks / total_tasks * 100) if total_tasks else 0
@@ -96,6 +100,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
         return {
             "groups": active,
+            "specs_groups": specs,
             "plan_groups": plan,
             "archived_groups": archived,
             "total_tasks": total_tasks,
@@ -106,7 +111,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
 
     def _tasks_context() -> dict:
         groups = _get_groups()
-        active, plan, archived = _partition_groups(groups)
+        active, specs, plan, archived = _partition_groups(groups)
 
         columns: dict[str, list[dict]] = {
             "draft": [],
@@ -140,6 +145,14 @@ def create_app(root: Path, config: Config) -> FastAPI:
             all_task_trees.extend(group.all_task_trees)
             all_phases.extend(group.all_phases)
 
+        specs_tasks = []
+        specs_task_trees = []
+        specs_phases = []
+        for group in specs:
+            specs_tasks.extend(group.all_tasks)
+            specs_task_trees.extend(group.all_task_trees)
+            specs_phases.extend(group.all_phases)
+
         plan_tasks = []
         plan_task_trees = []
         plan_groups_data = []
@@ -155,14 +168,21 @@ def create_app(root: Path, config: Config) -> FastAPI:
             archived_task_trees.extend(group.all_task_trees)
 
         archived_plan = [g for g in archived if "plan" in g.tags]
-        archived_specs = [g for g in archived if "plan" not in g.tags]
+        archived_specs = [g for g in archived if "specs" in g.tags]
+        archived_other = [
+            g for g in archived if "plan" not in g.tags and "specs" not in g.tags
+        ]
 
-        combined_tasks = all_tasks + plan_tasks
+        combined_tasks = all_tasks + specs_tasks + plan_tasks
         return {
             "columns": columns,
             "all_tasks": all_tasks,
             "all_task_trees": all_task_trees,
             "all_phases": all_phases,
+            "specs_groups": specs,
+            "specs_tasks": specs_tasks,
+            "specs_task_trees": specs_task_trees,
+            "specs_phases": specs_phases,
             "plan_groups": plan,
             "plan_tasks": plan_tasks,
             "plan_task_trees": plan_task_trees,
@@ -172,6 +192,7 @@ def create_app(root: Path, config: Config) -> FastAPI:
             "archived_task_trees": archived_task_trees,
             "archived_plan_groups": archived_plan,
             "archived_spec_groups": archived_specs,
+            "archived_other_groups": archived_other,
         }
 
     def _spec_context(name: str) -> dict | None:
@@ -254,8 +275,8 @@ def create_app(root: Path, config: Config) -> FastAPI:
     @app.get("/partials/global-progress", response_class=HTMLResponse)
     async def partial_global_progress(request: Request) -> HTMLResponse:
         groups = _get_groups()
-        active, plan, _archived = _partition_groups(groups)
-        all_counted = active + plan
+        active, specs, plan, _archived = _partition_groups(groups)
+        all_counted = active + specs + plan
         total = sum(g.task_total for g in all_counted)
         done = sum(g.task_done for g in all_counted)
         percent = int(done / total * 100) if total else 0
