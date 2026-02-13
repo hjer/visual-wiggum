@@ -154,3 +154,21 @@ When archived plan sections move into the Archive node, they lose their "Impleme
 - [x] Fix version mismatch: `pyproject.toml` says `0.3.2` but `src/spec_view/__init__.py` says `0.2.2`. Sync `__init__.py` to match `pyproject.toml` (source of truth for the build system).
 - [x] Fix deprecated `TemplateResponse` signature in `src/spec_view/web/server.py` (9 call sites). Change from `TemplateResponse(name, context)` to `TemplateResponse(request, name, context=context)` — eliminates deprecation warnings in tests.
 - [x] Remove unused `CommitEntry` import in `src/spec_view/web/server.py` (line 18). Only `get_history` is used. Also removed unused `Status` import.
+
+---
+
+## Add "specs" Tag and Collapsible Specs Section Across All UIs — DONE
+
+**Status:** done | **Priority:** high | **Tags:** core, tui, web, archive
+
+The specs require a `"specs"` tag auto-applied by the scanner to files from `spec_paths` directories (non-archived, non-wiggum). This tag drives a separate collapsible "Specs" section in both TUI and web UIs, sitting between active items and the Implementation Plan section.
+
+### Tasks
+
+- [x] Scanner: Apply "specs" tag to spec_paths groups
+- [x] TUI Dashboard: Add collapsible "Specs" section node with archive sub-grouping
+- [x] TUI Task Board: Add "Specs" section heading with archive sub-grouping
+- [x] Web: Upgrade `_partition_groups()` to return quad (active, specs, plan, archived)
+- [x] Web Dashboard Template: Add collapsible "Specs" section with archive sub-grouping
+- [x] Web Tasks Template: Add "Specs" section with archive sub-grouping
+- [x] Progress Bar: Verify correct counting — TUI `_render_bar()` and web progress both count active + specs + plan (excluding archived). Added `tests/test_progress_bar.py` with 4 unit tests.
