@@ -7,17 +7,6 @@
 
 ---
 
-## Web Archive: Add "Other" Sub-group Category
-
-**Status:** pending | **Priority:** low | **Tags:** web
-
-`specs/web.md` (line 38) specifies archive sub-groups as `(plan/specs/other)`. Currently the archive section only splits into `plan` and everything-else (treated as specs). Items that are archived but have neither `"plan"` nor `"specs"` tags (e.g., standalone include files that get archived) should appear under a separate "Other" heading, not mixed with specs.
-
-- [ ] In `partials/dashboard_content.html`, split `archived_spec_groups` into `archived_specs` (`"specs" in g.tags`) and `archived_other` (neither `"plan"` nor `"specs"`)
-- [ ] Render `archived_other` under their own section (no heading, or "Other" heading) if non-empty
-- [ ] Apply same pattern in `partials/tasks_content.html`
-- [ ] Definition of done: Archived items are sub-grouped into plan/specs/other in both dashboard and tasks pages
-
 ---
 
 ## Discovered Issues

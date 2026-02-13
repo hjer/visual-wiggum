@@ -205,3 +205,16 @@ The spec (`specs/tui.md` lines 12-18) requires app-level keybinding `r` for refr
 `dashboard.py` had `Binding("slash", "focus_search", "Search", show=False)` but the `action_focus_search` action was never defined. Pressing `/` would cause a Textual error. The spec doesn't mention search functionality, so the binding was removed.
 
 - [x] Remove the `Binding("slash", "focus_search", ...)` line from `DashboardScreen.BINDINGS` in `dashboard.py`
+
+---
+
+## Web Archive: Add "Other" Sub-group Category — DONE
+
+**Status:** done | **Priority:** low | **Tags:** web, archive
+
+`specs/web.md` (line 38) specifies archive sub-groups as `(plan/specs/other)`. The dashboard template already partitioned into plan/specs/other but rendered "Other" without a sub-heading. The tasks template only rendered plan and specs sub-groups, omitting "Other" entirely.
+
+- [x] In `partials/dashboard_content.html`, add "Other (done/total)" `archive-sub-heading` for `archived_other_groups`
+- [x] In `partials/tasks_content.html`, add "Other" sub-section rendering `archived_other_groups` with heading and per-group task trees
+- [x] Add 4 web tests: dashboard/tasks with "Other" present, dashboard/tasks without "Other" when not applicable
+- [x] Definition of done: Archived items are sub-grouped into plan/specs/other in both dashboard and tasks pages

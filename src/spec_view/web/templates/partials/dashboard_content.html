@@ -217,6 +217,9 @@
     </div>
     {% endif %}
     {% if archived_other_groups %}
+    {% set ao_done = archived_other_groups | sum(attribute='task_done') %}
+    {% set ao_total = archived_other_groups | sum(attribute='task_total') %}
+    <div class="archive-sub-heading">Other ({{ ao_done }}/{{ ao_total }})</div>
     <div class="spec-grid">
         {% for group in archived_other_groups %}
         <a href="/spec/{{ group.name }}" class="spec-card">

@@ -547,3 +547,100 @@ async def test_web_tasks_archive_no_plan_subheading_without_plan(tmp_path):
     assert "Specs (" in html
     # No Implementation Plan sub-heading since there are no archived plan groups
     assert ">Implementation Plan" not in html
+
+
+# ---------------------------------------------------------------------------
+# Web Dashboard & Tasks — "Other" archive sub-group
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def _web_other_setup(tmp_path):
+    """Setup with an include file in an archive/ dir outside spec_paths (→ 'Other')."""
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    (specs / "my-spec.md").write_text(
+        "---\ntitle: My Spec\nstatus: ready\n---\n# My Spec\n- [ ] Spec task\n"
+    )
+    # Create an archive directory outside spec_paths with an included file
+    other_archive = tmp_path / "docs" / "archive"
+    other_archive.mkdir(parents=True)
+    (other_archive / "misc-notes.md").write_text(
+        "---\ntitle: Misc Notes\nstatus: done\n---\n# Misc Notes\n- [x] Note task\n"
+    )
+    return tmp_path
+
+
+def _make_other_config(tmp_path) -> Config:
+    return Config(
+        spec_paths=[str(tmp_path / "specs")],
+        include=["docs/archive/misc-notes.md"],
+    )
+
+
+@pytest.mark.asyncio
+async def test_web_dashboard_archive_other_subheading(_web_other_setup):
+    """Web dashboard archive section has 'Other' sub-heading for non-plan/non-specs groups."""
+    tmp_path = _web_other_setup
+    app = create_app(tmp_path, _make_other_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/dashboard-content")
+    html = resp.text
+    assert "archive-section" in html
+    assert ">Other (" in html
+    assert "Misc Notes" in html
+
+
+@pytest.mark.asyncio
+async def test_web_tasks_archive_other_subheading(_web_other_setup):
+    """Web tasks archive section has 'Other' sub-heading for non-plan/non-specs groups."""
+    tmp_path = _web_other_setup
+    app = create_app(tmp_path, _make_other_config(tmp_path))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    assert "archive-section" in html
+    assert ">Other (" in html
+    assert "Misc Notes" in html
+
+
+@pytest.mark.asyncio
+async def test_web_dashboard_no_other_subheading_without_other(tmp_path):
+    """No 'Other' sub-heading when all archived groups are plan or specs."""
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    archive = specs / "archive"
+    archive.mkdir()
+    (archive / "old.md").write_text(
+        "---\ntitle: Old\nstatus: done\n---\n# Old\n- [x] Task\n"
+    )
+    config = Config(spec_paths=[str(specs)])
+    app = create_app(tmp_path, config)
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/dashboard-content")
+    html = resp.text
+    assert "archive-section" in html
+    assert ">Other (" not in html
+
+
+@pytest.mark.asyncio
+async def test_web_tasks_no_other_subheading_without_other(tmp_path):
+    """No 'Other' sub-heading when all archived groups are plan or specs."""
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    archive = specs / "archive"
+    archive.mkdir()
+    (archive / "old.md").write_text(
+        "---\ntitle: Old\nstatus: done\n---\n# Old\n- [x] Task\n"
+    )
+    config = Config(spec_paths=[str(specs)])
+    app = create_app(tmp_path, config)
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/partials/tasks-content")
+    html = resp.text
+    assert "archive-section" in html
+    assert ">Other (" not in html

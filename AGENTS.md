@@ -27,7 +27,7 @@ Note: Always use `.venv/bin/pytest` directly — system python lacks dependencie
   - `core/` — models, parser, scanner, detector, config, watcher
   - `tui/` — Textual TUI (app, dashboard, spec_view, task_board)
   - `web/` — FastAPI server, Jinja2 templates, htmx partials, static CSS
-- `tests/` — 187 pytest tests
+- `tests/` — 230 pytest tests
 - `specs/` — requirement specs (do not modify during build)
 - `specs/archive/` — completed specs (never delete, status: done)
 - `.spec-view/config.yaml` — scanner config (spec_paths, include, exclude)
