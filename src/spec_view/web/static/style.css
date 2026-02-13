@@ -704,21 +704,26 @@ h2 {
     margin-top: 0.5rem;
 }
 
-/* Plan section */
-.plan-section {
+/* Plan and Specs sections */
+.plan-section,
+.specs-section {
     margin-top: 2rem;
 }
 
 .plan-section.collapsed .spec-grid,
-.plan-section.collapsed .task-list {
+.plan-section.collapsed .task-list,
+.specs-section.collapsed .spec-grid,
+.specs-section.collapsed .task-list {
     display: none;
 }
 
-.plan-section.collapsed .plan-arrow {
+.plan-section.collapsed .plan-arrow,
+.specs-section.collapsed .plan-arrow {
     display: inline-block;
 }
 
-.plan-section:not(.collapsed) .plan-arrow {
+.plan-section:not(.collapsed) .plan-arrow,
+.specs-section:not(.collapsed) .plan-arrow {
     display: inline-block;
     transform: rotate(90deg);
 }

@@ -116,8 +116,8 @@ class TestSpecsTag:
         for g in groups:
             assert "specs" in g.tags, f"Group '{g.name}' missing 'specs' tag"
 
-    def test_archived_groups_not_tagged_specs(self, tmp_path):
-        """Groups in specs/archive/ get 'archive' but NOT 'specs'."""
+    def test_archived_groups_tagged_specs(self, tmp_path):
+        """Groups in specs/archive/ get both 'archive' and 'specs' tags."""
         archive_dir = tmp_path / "specs" / "archive"
         archive_dir.mkdir(parents=True)
         (archive_dir / "old.md").write_text(
@@ -128,7 +128,7 @@ class TestSpecsTag:
         groups = scan_specs(tmp_path, config)
         assert len(groups) == 1
         assert "archive" in groups[0].tags
-        assert "specs" not in groups[0].tags
+        assert "specs" in groups[0].tags
 
     def test_include_files_not_tagged_specs(self, tmp_path):
         """Standalone include files do NOT get the 'specs' tag."""

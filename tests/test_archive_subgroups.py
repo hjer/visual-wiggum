@@ -507,7 +507,9 @@ async def test_web_dashboard_archive_no_plan_subheading_without_plan(tmp_path):
         resp = await client.get("/partials/dashboard-content")
     html = resp.text
     assert "archive-section" in html
-    assert "archive-sub-heading" not in html
+    # Should have "Specs" sub-heading (archived spec group) but not "Implementation Plan"
+    assert ">Specs (" in html
+    assert ">Implementation Plan (" not in html
 
 
 @pytest.mark.asyncio

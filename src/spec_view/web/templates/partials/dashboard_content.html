@@ -60,6 +60,48 @@
     {% endfor %}
 </div>
 
+{% if specs_groups %}
+{% set specs_total = specs_groups | sum(attribute='task_total') %}
+{% set specs_done = specs_groups | sum(attribute='task_done') %}
+<div class="specs-section collapsed">
+    <div class="plan-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <span class="plan-arrow">&#x25b8;</span> Specs ({{ specs_done }}/{{ specs_total }})
+    </div>
+    <div class="spec-grid">
+        {% for group in specs_groups %}
+        <a href="/spec/{{ group.name }}" class="spec-card">
+            <div class="card-header">
+                <h3>{{ group.title }}</h3>
+                <span class="badge badge-{{ group.status.value }}">{{ group.status.value }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+                {% if group.format_type != "generic" %}
+                <span class="format-badge">{{ group.format_type }}</span>
+                {% endif %}
+                {% if group.tags %}
+                <span class="tags">{{ group.tags | join(', ') }}</span>
+                {% endif %}
+            </div>
+            {% if group.task_total > 0 %}
+            <div class="card-progress">
+                <div class="progress-container small">
+                    <div class="progress-bar" style="width: {{ group.task_percent }}%"></div>
+                </div>
+                <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
+            </div>
+            {% endif %}
+            <div class="card-files">
+                {% for ft in group.files.keys() %}
+                <span class="file-badge">{{ ft }}</span>
+                {% endfor %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% if plan_groups %}
 {% set plan_total = plan_groups | sum(attribute='task_total') %}
 {% set plan_done = plan_groups | sum(attribute='task_done') %}
@@ -97,11 +139,14 @@
 {% if archived_groups %}
 {% set archived_plan_groups = [] %}
 {% set archived_spec_groups = [] %}
+{% set archived_other_groups = [] %}
 {% for group in archived_groups %}
     {% if "plan" in group.tags %}
         {% set _ = archived_plan_groups.append(group) %}
-    {% else %}
+    {% elif "specs" in group.tags %}
         {% set _ = archived_spec_groups.append(group) %}
+    {% else %}
+        {% set _ = archived_other_groups.append(group) %}
     {% endif %}
 {% endfor %}
 <div class="archive-section collapsed">
@@ -138,8 +183,42 @@
     </div>
     {% endif %}
     {% if archived_spec_groups %}
+    {% set as_done = archived_spec_groups | sum(attribute='task_done') %}
+    {% set as_total = archived_spec_groups | sum(attribute='task_total') %}
+    <div class="archive-sub-heading">Specs ({{ as_done }}/{{ as_total }})</div>
     <div class="spec-grid">
         {% for group in archived_spec_groups %}
+        <a href="/spec/{{ group.name }}" class="spec-card">
+            <div class="card-header">
+                <h3>{{ group.title }}</h3>
+                <span class="badge badge-{{ group.status.value }}">{{ group.status.value }}</span>
+            </div>
+            <div class="card-meta">
+                <span class="priority priority-{{ group.priority.value }}">{{ group.priority.value }}</span>
+                {% if group.format_type != "generic" %}
+                <span class="format-badge">{{ group.format_type }}</span>
+                {% endif %}
+            </div>
+            {% if group.task_total > 0 %}
+            <div class="card-progress">
+                <div class="progress-container small">
+                    <div class="progress-bar" style="width: {{ group.task_percent }}%"></div>
+                </div>
+                <span class="progress-text small">{{ group.task_done }}/{{ group.task_total }}</span>
+            </div>
+            {% endif %}
+            <div class="card-files">
+                {% for ft in group.files.keys() %}
+                <span class="file-badge">{{ ft }}</span>
+                {% endfor %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if archived_other_groups %}
+    <div class="spec-grid">
+        {% for group in archived_other_groups %}
         <a href="/spec/{{ group.name }}" class="spec-card">
             <div class="card-header">
                 <h3>{{ group.title }}</h3>
@@ -171,7 +250,7 @@
 </div>
 {% endif %}
 
-{% if not groups and not plan_groups and not archived_groups %}
+{% if not groups and not specs_groups and not plan_groups and not archived_groups %}
 <p class="empty-state">No specs found. Run <code>spec-view init</code> to get started.</p>
 {% endif %}
 </div>

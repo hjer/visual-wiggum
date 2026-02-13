@@ -145,13 +145,14 @@ def scan_specs(root: Path, config: Config) -> list[SpecGroup]:
                 )
             groups[group_name].files[spec_file.file_type] = spec_file
 
-    # Auto-tag spec_paths groups with "specs" (not archive, not wiggum/plan)
+    # Auto-tag spec_paths groups with "specs" (not wiggum/plan)
+    # Applies to both active and archived spec_paths groups so archive
+    # sub-grouping can distinguish specs from other archived items.
     for group in groups.values():
         if _is_under_spec_path(group.path, root, config):
-            if "archive" not in group.tags:
-                for f in group.files.values():
-                    if "specs" not in f.tags:
-                        f.tags.append("specs")
+            for f in group.files.values():
+                if "specs" not in f.tags:
+                    f.tags.append("specs")
 
     # Sort non-plan groups alphabetically, then append plan groups in file order
     sorted_groups = sorted(groups.values(), key=lambda g: g.name)
