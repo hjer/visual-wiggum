@@ -197,5 +197,5 @@ async def test_no_plan_section_when_no_plan_file(tmp_path):
         tasks = await client.get("/tasks")
     assert dash.status_code == 200
     assert tasks.status_code == 200
-    assert "plan-section" not in dash.text
-    assert "plan-section" not in tasks.text
+    assert 'class="plan-section' not in dash.text
+    assert 'class="plan-section' not in tasks.text

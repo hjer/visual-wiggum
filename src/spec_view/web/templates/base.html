@@ -42,6 +42,40 @@
         evtSource.onerror = function() {
             dot.classList.remove('connected');
         };
+
+        /* Preserve collapse/expand state across htmx swaps */
+        var collapseState = {};
+        var sectionClasses = ['specs-section', 'plan-section', 'archive-section'];
+        var containerIds = ['dashboard-content', 'tasks-content'];
+
+        document.body.addEventListener('htmx:beforeRequest', function() {
+            sectionClasses.forEach(function(cls) {
+                containerIds.forEach(function(cid) {
+                    var parent = document.getElementById(cid);
+                    if (!parent) return;
+                    var el = parent.querySelector('.' + cls);
+                    if (el) collapseState[cid + '/' + cls] = el.classList.contains('collapsed');
+                });
+            });
+        });
+
+        document.body.addEventListener('htmx:afterSettle', function() {
+            sectionClasses.forEach(function(cls) {
+                containerIds.forEach(function(cid) {
+                    var key = cid + '/' + cls;
+                    if (!(key in collapseState)) return;
+                    var parent = document.getElementById(cid);
+                    if (!parent) return;
+                    var el = parent.querySelector('.' + cls);
+                    if (!el) return;
+                    if (collapseState[key]) {
+                        el.classList.add('collapsed');
+                    } else {
+                        el.classList.remove('collapsed');
+                    }
+                });
+            });
+        });
     })();
     </script>
 </body>

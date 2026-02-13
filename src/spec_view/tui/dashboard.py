@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from textual.app import ComposeResult
@@ -188,12 +189,58 @@ class DashboardScreen(Screen):
     def _rebuild_tree(self) -> None:
         tree = self.query_one("#spec-tree", SpecTree)
         cursor_line = tree.cursor_line
+        expand_state = self._get_expand_state(tree)
         tree.clear()
         self._populate_tree(tree)
+        self._restore_expand_state(tree, expand_state)
         try:
             tree.cursor_line = min(cursor_line, len(list(tree.root.children)) - 1)
         except Exception:
             pass
+
+    @staticmethod
+    def _node_key(node: TreeNode[SpecGroup], parent_key: str = "") -> str:
+        """Get a stable key for a tree node, independent of changing counts."""
+        if node.data is not None:
+            return parent_key + "/g:" + node.data.name
+        label = str(node.label)
+        clean = re.sub(r"\[/?[a-z]+\]", "", label)
+        match = re.search(r"\u25b8\s*(.+?)(?:\s*\(|$)", clean)
+        if match:
+            return parent_key + "/s:" + match.group(1).strip()
+        return parent_key + "/l:" + clean.strip()
+
+    def _get_expand_state(self, tree: SpecTree) -> dict[str, bool]:
+        """Capture expand/collapse state of all tree nodes."""
+        state: dict[str, bool] = {}
+
+        def _walk(node: TreeNode[SpecGroup], parent_key: str = "") -> None:
+            for child in node.children:
+                key = self._node_key(child, parent_key)
+                state[key] = child.is_expanded
+                if child.children:
+                    _walk(child, key)
+
+        _walk(tree.root)
+        return state
+
+    def _restore_expand_state(
+        self, tree: SpecTree, state: dict[str, bool]
+    ) -> None:
+        """Restore expand/collapse state from a saved snapshot."""
+
+        def _walk(node: TreeNode[SpecGroup], parent_key: str = "") -> None:
+            for child in node.children:
+                key = self._node_key(child, parent_key)
+                if key in state:
+                    if state[key]:
+                        child.expand()
+                    else:
+                        child.collapse()
+                if child.children:
+                    _walk(child, key)
+
+        _walk(tree.root)
 
     def _update_status_bar(self) -> None:
         status_bar = self.query_one("#status-bar", ProgressBarWidget)
