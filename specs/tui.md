@@ -25,11 +25,13 @@ Two-pane layout: spec tree (left) + scrollable detail (right).
 
 ### Tree Structure
 
-1. **Active specs** — normal display, alphabetical
-2. **Implementation Plan** — collapsible node, plan-tagged groups in file order, aggregate `(done/total)` count
-3. **Archive** — collapsible (collapsed by default), sub-grouped:
+1. **Active items** — ungrouped specs (no `specs`, `plan`, or `archive` tag), normal display, alphabetical
+2. **Specs** — collapsible node, specs-tagged groups alphabetical, aggregate `(done/total)` count. Contains spec documentation files from `spec_paths` directories.
+3. **Implementation Plan** — collapsible node, plan-tagged groups in file order, aggregate `(done/total)` count
+4. **Archive** — collapsible (collapsed by default), sub-grouped:
    - Archived plan sections under dimmed "Implementation Plan" heading
-   - Archived specs listed directly
+   - Archived specs under dimmed "Specs" heading
+   - Other archived items listed directly
 
 Each tree leaf shows: status icon, title, task progress `(done/total)`.
 
@@ -43,7 +45,7 @@ Shows selected spec: title, status/priority/format badges, tags, task progress, 
 
 ## Task Board Screen
 
-Tasks grouped under spec name headings with counts. Phases rendered for spec-kit specs. Task tree shows indentation + subtask counts. Archive section at bottom, dimmed, sub-grouped (plan/specs). `j`/`k` scroll.
+Tasks grouped under spec name headings with counts. Phases rendered for spec-kit specs. Task tree shows indentation + subtask counts. Sections: active tasks, then specs-tagged tasks under "Specs" heading, then plan-tagged tasks under "Implementation Plan" heading. Archive section at bottom, dimmed, sub-grouped (plan/specs/other). `j`/`k` scroll.
 
 ## History Screen
 

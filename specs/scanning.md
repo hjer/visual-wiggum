@@ -28,9 +28,12 @@ Files become SpecGroups via these rules:
 
 SpecGroup name comes from the directory name (for directory groups) or file stem (for standalone files).
 
-## Archive Auto-Tagging
+## Auto-Tagging
 
-Files under any `archive/` directory in the path get auto-tagged `"archive"`. This is path-based detection, not frontmatter.
+- **archive**: files under any `archive/` directory in the path. Path-based detection, not frontmatter.
+- **specs**: files from `spec_paths` directories (e.g., `specs/`) that are NOT in `archive/` and NOT wiggum-format. Identifies spec documentation for UI grouping. Applied by the scanner after grouping.
+- **plan**: wiggum-format sections from `IMPLEMENTATION_PLAN.md`. Applied during wiggum expansion.
+- **plan + archive**: wiggum sections where all tasks are done.
 
 ## Wiggum Expansion
 

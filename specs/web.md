@@ -12,9 +12,9 @@ FastAPI + Jinja2 + htmx. Dark theme.
 ## Routes
 
 ### Full Pages
-- `GET /` — dashboard: active specs, plan section, collapsible archive
+- `GET /` — dashboard: active items, collapsible specs section, plan section, collapsible archive
 - `GET /spec/{name}` — spec detail: rendered markdown, phases, task tree
-- `GET /tasks` — task board: tasks grouped by spec, kanban-style status columns, plan section, archive
+- `GET /tasks` — task board: tasks grouped by spec, kanban-style status columns, specs section, plan section, archive
 - `GET /history` — git commit timeline
 
 ### Partials (htmx swap targets)
@@ -29,12 +29,13 @@ FastAPI + Jinja2 + htmx. Dark theme.
 
 ## Partitioning
 
-`_partition_groups()` splits groups into `(active, plan, archived)`:
-- **active**: no `archive` or `plan` tags
+`_partition_groups()` splits groups into `(active, specs, plan, archived)`:
+- **active**: no `archive`, `specs`, or `plan` tags
+- **specs**: has `specs` tag, no `archive` tag. Spec documentation files from `spec_paths` directories.
 - **plan**: has `plan` tag, no `archive` tag
 - **archived**: has `archive` tag
 
-Dashboard and tasks use this triple. Archive sections are collapsible (collapsed by default), dimmed, with plan/spec sub-groups.
+Dashboard and tasks use this quad. Specs section is collapsible with aggregate progress. Plan section is collapsible with aggregate progress. Archive section is collapsible (collapsed by default), dimmed, with sub-groups (plan/specs/other).
 
 ## Live Updates
 
