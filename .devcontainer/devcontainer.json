@@ -7,7 +7,7 @@
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "postCreateCommand": "npm install -g @anthropic-ai/claude-code && pip install -e '.[dev]'",
-  "postStartCommand": "git config --global user.name \"${GIT_USER_NAME:-spec-view-bot}\" && git config --global user.email \"${GIT_USER_EMAIL:-bot@spec-view}\" && if [ -n \"${GH_TOKEN:-}\" ]; then echo \"${GH_TOKEN}\" | gh auth login --with-token 2>/dev/null && gh auth setup-git; fi",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
   "forwardPorts": [8000],
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
