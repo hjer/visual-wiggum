@@ -172,3 +172,23 @@ The specs require a `"specs"` tag auto-applied by the scanner to files from `spe
 - [x] Web Dashboard Template: Add collapsible "Specs" section with archive sub-grouping
 - [x] Web Tasks Template: Add "Specs" section with archive sub-grouping
 - [x] Progress Bar: Verify correct counting — TUI `_render_bar()` and web progress both count active + specs + plan (excluding archived). Added `tests/test_progress_bar.py` with 4 unit tests.
+
+---
+
+## TUI: Add Missing `r` Refresh Keybinding — DONE
+
+**Status:** done | **Priority:** low | **Tags:** tui, archive
+
+The spec (`specs/tui.md` lines 12-18) requires app-level keybinding `r` for refresh. The `action_refresh()` method already existed in `app.py` but the `r` binding was missing from the `BINDINGS` list. Added the binding — both manual `r` refresh and background watcher auto-refresh now work as the spec requires.
+
+- [x] Add `Binding("r", "refresh", "Refresh", show=True)` to `SpecViewApp.BINDINGS` in `app.py`
+
+---
+
+## TUI: Remove Undefined Search Binding — DONE
+
+**Status:** done | **Priority:** low | **Tags:** tui, archive
+
+`dashboard.py` had `Binding("slash", "focus_search", "Search", show=False)` but the `action_focus_search` action was never defined. Pressing `/` would cause a Textual error. The spec doesn't mention search functionality, so the binding was removed.
+
+- [x] Remove the `Binding("slash", "focus_search", ...)` line from `DashboardScreen.BINDINGS` in `dashboard.py`

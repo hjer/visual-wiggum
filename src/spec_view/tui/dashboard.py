@@ -62,9 +62,7 @@ class DashboardScreen(Screen):
     }
     """
 
-    BINDINGS = [
-        Binding("slash", "focus_search", "Search", show=False),
-    ]
+    BINDINGS: list[Binding] = []
 
     def __init__(
         self,

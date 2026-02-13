@@ -1,28 +1,7 @@
 # Implementation Plan
 
 > Auto-generated and maintained by the planning loop. Do not edit specs here — write them in `specs/`.
-> Completed sections archived to `IMPLEMENTATION_PLAN_ARCHIVE.md`.
-
----
-
-## TUI: Add Missing `r` Refresh Keybinding
-
-**Status:** pending | **Priority:** low | **Tags:** tui
-
-The spec (`specs/tui.md` lines 12-18) requires app-level keybinding `r` for refresh. The `action_refresh()` method already exists in `app.py:83` and works correctly, but the `r` binding is missing from the `BINDINGS` list at `app.py:29-34`. If it's done automaticcally, should we remove the key binding? 
-
-- [ ] remove key binding, since updated automatically 
-
----
-
-## TUI: Remove Undefined Search Binding
-
-**Status:** pending | **Priority:** low | **Tags:** tui
-
-`dashboard.py:66` has `Binding("slash", "focus_search", "Search", show=False)` but the `action_focus_search` action is never defined. This will cause a Textual error if a user presses `/`. The spec doesn't mention search functionality, so this binding should be removed.
-
-- [ ] Remove the `Binding("slash", "focus_search", ...)` line from `DashboardScreen.BINDINGS` in `dashboard.py`
-- [ ] Definition of done: No undefined action bindings in TUI; pressing `/` no longer triggers an error
+> Completed tasks archived to `IMPLEMENTATION_PLAN_ARCHIVE.md`.
 
 ---
 

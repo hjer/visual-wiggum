@@ -31,6 +31,7 @@ class SpecViewApp(App):
         Binding("d", "switch_dashboard", "Dashboard", show=True),
         Binding("t", "switch_tasks", "Tasks", show=True),
         Binding("l", "switch_history", "History", show=True),
+        Binding("r", "refresh", "Refresh", show=True),
     ]
 
     def __init__(
